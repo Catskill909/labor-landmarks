@@ -106,6 +106,14 @@ You add 50 new landmarks locally (via scraping or manual entry) and want them on
         -   It **Adds** completely new records.
     -   *Result*: Your Production user edits remain safe, and your new local data is added seamlessly.
 
+### 3. Critical Technical Configs (For Coolify/Docker)
+
+*   **Port 3000**: The `Dockerfile` is strictly set to **Port 3000** (checking `EXPOSE 3000` and `ENV PORT=3000`). This matches the default healthcheck settings of most platforms (Coolify, Railway, etc.). **Do not change this** unless you update the healthcheck URL in your deployment settings.
+*   **Database Migrations**:
+    *   **Rule**: If you change `prisma/schema.prisma` (e.g., add a column), you **MUST** run `npx prisma migrate dev` locally.
+    *   **Why?**: This generates the SQL file in `prisma/migrations/`. The production server uses this file to update the live database.
+    *   **Failure Mode**: If you push code without the migration file, the deployment will crash with "Column not found".
+
 ---
 
 ## AI Handoff Protocol

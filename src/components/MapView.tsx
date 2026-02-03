@@ -31,6 +31,11 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
                 <Marker
                     key={landmark.id}
                     position={[landmark.lat, landmark.lng]}
+                    eventHandlers={{
+                        click: () => {
+                            map.flyTo([landmark.lat, landmark.lng], Math.max(map.getZoom(), 9));
+                        },
+                    }}
                 >
                     <Popup className="custom-popup">
                         <div
@@ -40,7 +45,7 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
                                 map.closePopup();
                             }}
                         >
-                            <h3 className="font-bold text-sm mb-1 group-hover:text-red-500 transition-colors uppercase tracking-tight">{landmark.name}</h3>
+                            <h3 className="font-bold text-sm mb-1 group-hover:text-red-500 transition-colors uppercase tracking-tight pr-8">{landmark.name}</h3>
                             <p className="text-xs text-gray-400 mb-2">{landmark.city}, {landmark.state}</p>
                             <span className="text-[10px] text-red-500 font-bold group-hover:underline">
                                 VIEW DETAILS
