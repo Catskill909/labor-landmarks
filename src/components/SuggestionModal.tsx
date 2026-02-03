@@ -32,6 +32,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         address: '',
         lat: '',
         lng: '',
+        country: 'USA',
         email: '',
         website: '',
         telephone: ''
@@ -59,7 +60,8 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                 lng: '',
                 email: '',
                 website: '',
-                telephone: ''
+                telephone: '',
+                country: 'USA'
             });
             setQuery('');
         }
@@ -322,6 +324,18 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                         className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
                                         placeholder="https://..."
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Country</label>
+                                    <select
+                                        required
+                                        value={formData.country}
+                                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                        className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 appearance-none"
+                                    >
+                                        <option value="USA">USA</option>
+                                        <option value="Canada">Canada</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

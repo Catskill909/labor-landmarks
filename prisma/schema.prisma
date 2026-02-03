@@ -12,6 +12,7 @@ model Landmark {
   name        String
   city        String
   state       String
+  country     String   @default("USA")
   category    String
   description String
   address     String
@@ -20,6 +21,7 @@ model Landmark {
   email       String?
   website     String?
   telephone   String?
+  sourceUrl   String?  @unique
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

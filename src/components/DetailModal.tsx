@@ -92,7 +92,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                     </div>
                                     <div>
                                         <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Location</p>
-                                        <p className="text-sm font-medium">{landmark.city}, {landmark.state}</p>
+                                        <p className="text-sm font-medium">{landmark.city}, {landmark.state}, {landmark.country}</p>
                                     </div>
                                 </div>
 
@@ -183,6 +183,21 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                     >
                                         <ExternalLink size={14} />
                                         Official Site
+                                    </a>
+                                </div>
+                            )}
+
+                            {landmark.sourceUrl && (
+                                <div className="p-8 pt-0 mt-auto">
+                                    <h4 className="text-zinc-600 font-bold text-[10px] uppercase tracking-widest mb-2">Original Source</h4>
+                                    <a
+                                        href={landmark.sourceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                                    >
+                                        <ExternalLink size={10} />
+                                        View on Labor Radio Network
                                     </a>
                                 </div>
                             )}

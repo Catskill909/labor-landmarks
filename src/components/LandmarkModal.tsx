@@ -36,7 +36,9 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         lng: '',
         email: '',
         website: '',
-        telephone: ''
+        telephone: '',
+        country: 'USA',
+        sourceUrl: ''
     });
 
     // Autocomplete State
@@ -58,7 +60,9 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 lng: landmark.lng.toString(),
                 email: landmark.email || '',
                 website: landmark.website || '',
-                telephone: landmark.telephone || ''
+                telephone: landmark.telephone || '',
+                country: landmark.country || 'USA',
+                sourceUrl: landmark.sourceUrl || ''
             });
         } else {
             setFormData({
@@ -72,7 +76,9 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 lng: '',
                 email: '',
                 website: '',
-                telephone: ''
+                telephone: '',
+                country: 'USA',
+                sourceUrl: ''
             });
             setQuery('');
         }
@@ -84,7 +90,8 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
             if (query.length > 2 && showSuggestions) {
                 setIsSearching(true);
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=us`, {
+                    const countryCode = formData.country.toLowerCase() === 'canada' ? 'ca' : 'us';
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=${countryCode}`, {
                         headers: {
                             'User-Agent': 'LaborLandmarksApp/1.0'
                         }
@@ -249,6 +256,19 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
                                 placeholder="IL"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Country</label>
+                            <select
+                                required
+                                value={formData.country}
+                                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 appearance-none"
+                            >
+                                <option value="USA">USA</option>
+                                <option value="Canada">Canada</option>
+                            </select>
                         </div>
 
                         <div className="md:col-span-2">

@@ -76,7 +76,35 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
     - **Option B**: **Nodemailer**. Use your own SMTP/Gmail. Zero cost, slightly more config.
 - [ ] **Authentication**: Secure the `/admin` route with password protection (Simple Auth or Clerk/Auth0).
 - [ ] **Image Upload**: Replace image URLs with actual file uploads (stored in filesystem volume).
-- [ ] **Export/Import**: CSV backup tools for the admin.
+
+---
+
+## Deployment & Data Strategy (Crucial)
+
+To maintain a healthy production environment, you must understand the distinction between **Code** and **Data**:
+
+### 1. The Separation of Church and State
+-   **CODE (Git/Coolify)**: When you push to GitHub, Coolify rebuilds your app. This updates the logic (React components, API endpoints, styling).
+-   **DATA (SQLite)**: The database file (`dev.db`) sits in a "Volume" on the server. **It is NOT overwritten by code deployments.**
+    -   *Why?* If we replaced the DB every time you pushed code, you would delete every user submission and edit made on the production site.
+
+### 2. The "Safe Sync" Workflow
+Since you cannot just "push your local DB" to production, we use the **Import/Restore** feature to keep things in sync.
+
+#### Scenario A: First Deployment (Initialization)
+1.  **Local**: Export your full dataset using the **"Backup JSON"** button.
+2.  **Prod**: Log into your fresh production site.
+3.  **Prod**: Use the **"Import JSON"** button to populate the empty database.
+
+#### Scenario B: Ongoing Updates
+You add 50 new landmarks locally (via scraping or manual entry) and want them on Prod.
+1.  **Local**: Export **"Backup JSON"**.
+2.  **Prod**: **"Import JSON"**.
+    -   The system uses **"Smart Merge"**:
+        -   It finds scraping records by `sourceUrl` and **Updates** them.
+        -   It finds manual records by `Name + Location` and **Skips** duplicates.
+        -   It **Adds** completely new records.
+    -   *Result*: Your Production user edits remain safe, and your new local data is added seamlessly.
 
 ---
 

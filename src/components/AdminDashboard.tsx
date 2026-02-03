@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Landmark } from './LandmarkCard';
-import LandmarkModal from './LandmarkModal';
+import LandmarkModal from './LandmarkModal.tsx';
 
+// Admin Dashboard for managing landmarks
 const AdminDashboard: React.FC = () => {
     const [landmarks, setLandmarks] = useState<Landmark[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [importing, setImporting] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [selectedLandmark, setSelectedLandmark] = useState<Landmark | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [filterStatus, setFilterStatus] = useState<'published' | 'draft'>('published');
@@ -76,6 +79,50 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+            alert('Please select a valid JSON file.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to import this file? This will merge new data into the database.')) {
+            return;
+        }
+
+        setImporting(true);
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const json = JSON.parse(e.target?.result as string);
+                const response = await fetch('/api/admin/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(json)
+                });
+
+                if (!response.ok) throw new Error('Import failed');
+
+                const result = await response.json();
+                alert(`Import Successful!\nAdded: ${result.stats.added}\nUpdated: ${result.stats.updated}\nSkipped: ${result.stats.skipped}`);
+                fetchAdminLandmarks();
+            } catch (error) {
+                console.error('Import error:', error);
+                alert('Failed to import data. Check console for details.');
+            } finally {
+                setImporting(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
+
     // Calculate Counts
     const publishedCount = landmarks.filter(l => l.isPublished ?? true).length;
     const draftCount = landmarks.filter(l => !(l.isPublished ?? true)).length;
@@ -107,13 +154,40 @@ const AdminDashboard: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <button
-                        onClick={handleAdd}
-                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95"
-                    >
-                        <Plus size={18} />
-                        Add Landmark
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImportFile}
+                            className="hidden"
+                            accept=".json"
+                        />
+                        <button
+                            onClick={handleImportClick}
+                            disabled={importing}
+                            className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-gray-300 px-6 py-2.5 rounded-xl font-bold transition-all border border-white/5 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Import JSON Backup"
+                        >
+                            {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                            Import JSON
+                        </button>
+                        <a
+                            href="/api/admin/backup"
+                            className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-gray-300 px-6 py-2.5 rounded-xl font-bold transition-all border border-white/5 hover:scale-105 active:scale-95 no-underline"
+                            title="Download JSON Backup"
+                            download
+                        >
+                            <Download size={18} />
+                            Backup JSON
+                        </a>
+                        <button
+                            onClick={handleAdd}
+                            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95"
+                        >
+                            <Plus size={18} />
+                            Add Landmark
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats & Search */}
@@ -180,7 +254,7 @@ const AdminDashboard: React.FC = () => {
                                         <div className="text-xs text-gray-500 truncate max-w-xs">{landmark.description}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm font-medium">{landmark.city}, {landmark.state}</div>
+                                        <div className="text-sm font-medium">{landmark.city}, {landmark.state}, {landmark.country}</div>
                                         <div className="text-[10px] text-gray-500">{landmark.address}</div>
                                     </td>
                                     <td className="px-6 py-4">
