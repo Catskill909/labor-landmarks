@@ -12,7 +12,21 @@ async function main() {
     const landmarksPath = path.join(__dirname, '../src/data/landmarks.json');
     const data = JSON.parse(fs.readFileSync(landmarksPath, 'utf8'));
 
-    console.log('Seeding landmarks...');
+    // Check if database is empty
+    const count = await prisma.landmark.count();
+    const forceSeed = process.env.FORCE_SEED === 'true';
+
+    if (count > 0 && !forceSeed) {
+        console.log(`Database already contains ${count} landmarks. Skipping seed.`);
+        console.log('Use FORCE_SEED=true to overwrite.');
+        return;
+    }
+
+    if (forceSeed) {
+        console.log('FORCE_SEED set. Overwriting existing data...');
+    } else {
+        console.log('Database empty. Seeding landmarks...');
+    }
 
     for (const item of data) {
         await prisma.landmark.upsert({

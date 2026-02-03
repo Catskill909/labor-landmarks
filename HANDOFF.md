@@ -117,7 +117,15 @@ You add 50 new landmarks locally (via scraping or manual entry) and want them on
 *   **Database Migrations**:
     *   **Rule**: If you change `prisma/schema.prisma` (e.g., add a column), you **MUST** run `npx prisma migrate dev` locally.
     *   **Why?**: This generates the SQL file in `prisma/migrations/`. The production server uses this file to update the live database.
-    *   **Failure Mode**: If you push code without the migration file, the deployment will crash with "Column not found".
+### 4. CRITICAL: Data Persistence Safety
+> [!IMPORTANT]
+> A critical update was made to prevent production data overwrite.
+
+-   **Auto-Seeding Disabled**: The `Dockerfile` NO LONGER runs `npx tsx prisma/seed.ts` on startup. This prevents the dynamic production database from being reset to the static `landmarks.json` file on every deployment.
+-   **Safe Seed Script**: The `prisma/seed.ts` script now checks if the database is empty before running.
+    -   **If DB has data**: It creates a log entry and SKIPS seeding.
+    -   **Force Seeding**: To overwrite the database (e.g., during initial setup or reset), you must specifically set the environment variable: `FORCE_SEED=true`.
+    -   **Command**: `FORCE_SEED=true npx tsx prisma/seed.ts`
 
 ---
 
@@ -127,6 +135,7 @@ When picking up from this document, future AI agents should:
 2. Check if the `server/` directory exists and matches the API specifications.
 3. Ensure the `vite.config.ts` proxy is correctly pointing to the Express server port.
 4. Review `task.md` for the immediate next steps.
+5. **NEVER** re-enable auto-seeding in `Dockerfile` without explicit user confirmation.
 
 ---
 
