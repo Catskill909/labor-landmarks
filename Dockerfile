@@ -15,8 +15,9 @@ RUN npx prisma generate
 FROM node:20-alpine
 WORKDIR /app
 
-# Install runtime utilities (prisma for migrations, tsx for server)
+# Install runtime utilities (prisma for migrations, tsx for server, curl for healthcheck)
 RUN npm install -g prisma tsx
+RUN apk add --no-cache curl
 
 # Install only production dependencies
 COPY package*.json ./
