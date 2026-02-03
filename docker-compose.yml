@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    image: labor-map:latest
+    container_name: labor-map
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # Persist SQLite DB in a volume mapped to /data inside container
+      - DATABASE_URL=file:/data/labor.db
+    volumes:
+      # Map the named volume to /data
+      - labor_data:/data
+
+volumes:
+  labor_data:

@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "name": "1913 Copper Miners strike, Michigan",
+    "city": "Houghton",
+    "state": "MI",
+    "category": "Labor history organization",
+    "description": "A commemorative site and blog established to coordinate activities relating to the centennial of the 1913-14 Michigan Copper Miners’ Strike.",
+    "address": "Michigan, USA",
+    "lat": 47.1211,
+    "lng": -88.5694
+  },
+  {
+    "id": 2,
+    "name": "AFSCME Roll of Honor",
+    "city": "New Britain",
+    "state": "CT",
+    "category": "Historical marker",
+    "description": "A marker placed to honor men and women who put their lives on the line, emphasizing the need for safety measures and OSHA coverage for public employees.",
+    "address": "444 E Main St, New Britain, CT 06051, USA",
+    "lat": 41.6675,
+    "lng": -72.7833
+  },
+  {
+    "id": 3,
+    "name": "American Factory Worker Sculptures",
+    "city": "Chicago",
+    "state": "IL",
+    "category": "Sculpture",
+    "description": "Six statues originally exhibited at the 1933 Chicago Century of Progress Exposition, discovered in storage rooms of the Museum of Science & Industry.",
+    "address": "5700 S DuSable Lake Shore Dr, Chicago, IL 60637, USA",
+    "lat": 41.7924,
+    "lng": -87.5814
+  },
+  {
+    "id": 4,
+    "name": "A. Phillip Randolph Pullman Porter Museum",
+    "city": "Chicago",
+    "state": "IL",
+    "category": "Labor history organization, Museum",
+    "description": "A museum dedicated to the history of A. Phillip Randolph and the Brotherhood of Sleeping Car Porters.",
+    "address": "10406 S Maryland Ave, Chicago, IL 60628, USA",
+    "lat": 41.7056,
+    "lng": -87.6033
+  },
+  {
+    "id": 5,
+    "name": "Alabama Labor History Association",
+    "city": "Birmingham",
+    "state": "AL",
+    "category": "Labor history organization",
+    "description": "An organization currently in formation dedicated to preserving and promoting the labor history of Alabama.",
+    "address": "Alabama, USA",
+    "lat": 33.5186,
+    "lng": -86.8104
+  },
+  {
+    "id": 6,
+    "name": "American Federation of Labor Founding Marker",
+    "city": "Pittsburgh",
+    "state": "PA",
+    "category": "Historical marker",
+    "description": "A state historical marker commemorating the founding of the American Federation of Labor in Pittsburgh.",
+    "address": "Pittsburgh, PA, USA",
+    "lat": 40.4406,
+    "lng": -79.9959
+  },
+  {
+    "id": 7,
+    "name": "AFL-CIO Headquarters",
+    "city": "Washington",
+    "state": "DC",
+    "category": "Memorial",
+    "description": "The national headquarters of the AFL-CIO, which serves as a central hub for labor advocacy and also houses various memorials.",
+    "address": "815 16th St NW, Washington, DC 20006, USA",
+    "lat": 38.9009,
+    "lng": -77.0366
+  },
+  {
+    "id": 8,
+    "name": "Allegheny Arsenal Explosion Monument",
+    "city": "Pittsburgh",
+    "state": "PA",
+    "category": "Monument, Memorial",
+    "description": "A monument dedicated to the victims of the catastrophic 1862 explosion at the Allegheny Arsenal during the Civil War.",
+    "address": "Pittsburgh, PA, USA",
+    "lat": 40.4683,
+    "lng": -79.9583
+  },
+  {
+    "id": 9,
+    "name": "American Federation of Labor Headquarters",
+    "city": "Washington",
+    "state": "DC",
+    "category": "Plaque, Union Hall, Historical marker",
+    "description": "Site of the historic headquarters of the AFL, marked with a plaque to denote its significance in organized labor history.",
+    "address": "901 Massachusetts Ave NW, Washington, DC 20001, USA",
+    "lat": 38.9014,
+    "lng": -77.0256
+  },
+  {
+    "id": 10,
+    "name": "American Federation of Teachers First Office",
+    "city": "Chicago",
+    "state": "IL",
+    "category": "Structure",
+    "description": "The location of the very first office used by the American Federation of Teachers during its founding years.",
+    "address": "Chicago, IL, USA",
+    "lat": 41.8781,
+    "lng": -87.6298
+  },
+  {
+    "id": 11,
+    "name": "American Merchant Marine Veterans Memorial",
+    "city": "San Pedro",
+    "state": "CA",
+    "category": "Monument, Sculpture",
+    "description": "A large sculpture and monument honoring the service and sacrifice of American Merchant Marine veterans.",
+    "address": "San Pedro, CA, USA",
+    "lat": 33.7408,
+    "lng": -118.2778
+  },
+  {
+    "id": 12,
+    "name": "Anderson, Colonel James, Monument",
+    "city": "Pittsburgh",
+    "state": "PA",
+    "category": "Monument",
+    "description": "A monument dedicated to Colonel James Anderson, known for his support of early libraries for working men.",
+    "address": "Pittsburgh, PA, USA",
+    "lat": 40.4483,
+    "lng": -80.0058
+  },
+  {
+    "id": 13,
+    "name": "American Labor Museum (Botto House)",
+    "city": "Haledon",
+    "state": "NJ",
+    "category": "Museum",
+    "description": "The Pietro and Maria Botto House served as a meeting place during the 1913 Paterson Silk Strike and is now a museum of labor history.",
+    "address": "83 Norwood St, Haledon, NJ 07508, USA",
+    "lat": 40.9388,
+    "lng": -74.1856
+  },
+  {
+    "id": 14,
+    "name": "American Merchant Seamen Memorial",
+    "city": "St. Louis",
+    "state": "MO",
+    "category": "Memorial",
+    "description": "A memorial dedicated to the contributions and memory of merchant seamen on the riverfront.",
+    "address": "St. Louis, MO, USA",
+    "lat": 38.6270,
+    "lng": -90.1994
+  },
+  {
+    "id": 15,
+    "name": "Anthracite Boys Bust",
+    "city": "Wilkes-Barre",
+    "state": "PA",
+    "category": "Statue",
+    "description": "A statue commemorating the 'breaker boys' and children who worked in the anthracite coal mines of Pennsylvania.",
+    "address": "Wilkes-Barre, PA, USA",
+    "lat": 41.2459,
+    "lng": -75.8813
+  }
+]
