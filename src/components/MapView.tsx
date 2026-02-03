@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Landmark } from './LandmarkCard';
 import L from 'leaflet';
@@ -22,6 +22,37 @@ interface MapViewProps {
     onSelectLandmark: (landmark: Landmark) => void;
 }
 
+const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
+    const map = useMap();
+
+    return (
+        <>
+            {landmarks.map((landmark) => (
+                <Marker
+                    key={landmark.id}
+                    position={[landmark.lat, landmark.lng]}
+                >
+                    <Popup className="custom-popup">
+                        <div
+                            className="p-1 cursor-pointer group"
+                            onClick={() => {
+                                onSelectLandmark(landmark);
+                                map.closePopup();
+                            }}
+                        >
+                            <h3 className="font-bold text-sm mb-1 group-hover:text-red-500 transition-colors uppercase tracking-tight">{landmark.name}</h3>
+                            <p className="text-xs text-gray-400 mb-2">{landmark.city}, {landmark.state}</p>
+                            <span className="text-[10px] text-red-500 font-bold group-hover:underline">
+                                VIEW DETAILS
+                            </span>
+                        </div>
+                    </Popup>
+                </Marker>
+            ))}
+        </>
+    );
+};
+
 const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
     const center: [number, number] = [39.8283, -98.5795]; // Geographical center of USA
 
@@ -37,25 +68,7 @@ const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {landmarks.map((landmark) => (
-                    <Marker
-                        key={landmark.id}
-                        position={[landmark.lat, landmark.lng]}
-                    >
-                        <Popup className="custom-popup">
-                            <div className="p-1 cursor-pointer">
-                                <h3 className="font-bold text-sm mb-1">{landmark.name}</h3>
-                                <p className="text-xs text-gray-400 mb-2">{landmark.city}, {landmark.state}</p>
-                                <button
-                                    onClick={() => onSelectLandmark(landmark)}
-                                    className="text-[10px] text-red-500 font-bold hover:underline"
-                                >
-                                    VIEW DETAILS
-                                </button>
-                            </div>
-                        </Popup>
-                    </Marker>
-                ))}
+                <MapMarkers landmarks={landmarks} onSelectLandmark={onSelectLandmark} />
             </MapContainer>
         </div>
     );

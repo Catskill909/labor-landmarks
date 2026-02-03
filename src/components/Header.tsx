@@ -1,24 +1,20 @@
 import React from 'react';
-import { Landmark, Search, Map, List, X, Plus } from 'lucide-react';
+import { Landmark, Search, X, Plus } from 'lucide-react';
 import SuggestionModal from './SuggestionModal';
 
 interface HeaderProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
-    viewMode: 'map' | 'list';
-    setViewMode: (mode: 'map' | 'list') => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
     searchQuery,
     setSearchQuery,
-    viewMode,
-    setViewMode
 }) => {
     const [isSuggestionOpen, setIsSuggestionOpen] = React.useState(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full glass px-6 py-3 flex items-center justify-between border-b border-white/5 gap-6">
+        <header className="sticky top-0 z-[2000] w-full glass px-6 py-3 flex items-center justify-between border-b border-white/5 gap-6">
             <div className="flex items-center gap-3 min-w-fit">
                 <div className="bg-red-600 p-2 rounded-lg shadow-lg shadow-red-900/20">
                     <Landmark className="text-white w-5 h-5" />
@@ -49,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({
                 )}
             </div>
 
-            {/* View Switcher & Actions */}
+            {/* Actions */}
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => setIsSuggestionOpen(true)}
@@ -58,29 +54,6 @@ const Header: React.FC<HeaderProps> = ({
                     <Plus size={16} className="text-red-400" />
                     Suggest Site
                 </button>
-
-                <div className="flex items-center bg-zinc-900/80 p-1 rounded-xl border border-white/5 min-w-fit">
-                    <button
-                        onClick={() => setViewMode('map')}
-                        className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-300 ${viewMode === 'map'
-                            ? 'bg-red-600 text-white shadow-lg'
-                            : 'text-gray-400 hover:text-white'
-                            }`}
-                    >
-                        <Map size={16} />
-                        <span className="text-sm font-bold hidden md:inline">Map</span>
-                    </button>
-                    <button
-                        onClick={() => setViewMode('list')}
-                        className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-300 ${viewMode === 'list'
-                            ? 'bg-red-600 text-white shadow-lg'
-                            : 'text-gray-400 hover:text-white'
-                            }`}
-                    >
-                        <List size={16} />
-                        <span className="text-sm font-bold hidden md:inline">List</span>
-                    </button>
-                </div>
             </div>
 
             <SuggestionModal isOpen={isSuggestionOpen} onClose={() => setIsSuggestionOpen(false)} />

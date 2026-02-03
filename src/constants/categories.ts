@@ -1,0 +1,20 @@
+export const CATEGORIES = [
+    'Art',
+    'Bas-relief',
+    'Bust',
+    'Fresco',
+    'Gravesite',
+    'Historical marker',
+    'Labor history organization',
+    'Memorial',
+    'Monument',
+    'Mural',
+    'Museum',
+    'Museum/Archive',
+    'Plaque',
+    'Sculpture',
+    'Statue',
+    'Structure',
+    'Union Hall',
+    'Walking Tour'
+].sort();

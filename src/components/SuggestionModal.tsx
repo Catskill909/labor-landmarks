@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Save, MapPin, Loader2, Check } from 'lucide-react';
+import { CATEGORIES } from '../constants/categories';
 
 interface SuggestionModalProps {
     isOpen: boolean;
@@ -20,11 +21,6 @@ interface NominatimResult {
     };
 }
 
-const CATEGORIES = [
-    'Art', 'Bas-relief', 'Bust', 'Fresco', 'Gravesite', 'Historical marker',
-    'Labor history organization', 'Memorial', 'Monument', 'Mural', 'Museum',
-    'Plaque', 'Sculpture', 'Statue', 'Structure', 'Union Hall', 'Walking Tour'
-];
 
 export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProps) {
     const [formData, setFormData] = useState({

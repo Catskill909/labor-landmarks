@@ -7,6 +7,7 @@ import MapView from './components/MapView';
 import DetailModal from './components/DetailModal';
 import AdminDashboard from './components/AdminDashboard';
 import type { Landmark } from './components/LandmarkCard';
+import { CATEGORIES } from './constants/categories';
 
 function App() {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -34,13 +35,7 @@ function App() {
     fetchLandmarks();
   }, []);
 
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    landmarks.forEach(l => {
-      l.category.split(',').forEach(c => cats.add(c.trim()));
-    });
-    return Array.from(cats).sort();
-  }, [landmarks]);
+  const categories = CATEGORIES;
 
   const filteredLandmarks = useMemo(() => {
     return landmarks.filter(l => {
@@ -84,16 +79,16 @@ function App() {
             <Header
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
             />
 
             <main className="flex-1 flex flex-col min-h-0">
-              <div className="px-6 pt-3 flex flex-col">
+              <div className="px-6 pt-3 flex flex-col relative z-[1000]">
                 <FilterBar
                   selectedCategory={selectedCategory}
                   setSelectedCategory={setSelectedCategory}
                   categories={categories}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
                 />
               </div>
 

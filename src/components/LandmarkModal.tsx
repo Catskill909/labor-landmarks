@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, MapPin, Loader2 } from 'lucide-react';
+import { CATEGORIES } from '../constants/categories';
 import type { Landmark } from './LandmarkCard';
 
 interface NominatimResult {
@@ -22,11 +23,6 @@ interface LandmarkModalProps {
     onSuccess: () => void;
 }
 
-const CATEGORIES = [
-    'Art', 'Bas-relief', 'Bust', 'Fresco', 'Gravesite', 'Historical marker',
-    'Labor history organization', 'Memorial', 'Monument', 'Mural', 'Museum',
-    'Plaque', 'Sculpture', 'Statue', 'Structure', 'Union Hall', 'Walking Tour'
-];
 
 const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark, onSuccess }) => {
     const [formData, setFormData] = useState({
