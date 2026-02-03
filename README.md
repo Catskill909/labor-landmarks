@@ -37,7 +37,7 @@ A professional, full-stack interactive map application designed to explore, visu
 
 This project is fully containerized and ready for high-reliability deployment on platforms like **Coolify** or generic Docker hosts.
 
-- **Storage**: Uses a Docker volume (`labor_data`) to persist the SQLite database (`/app/data/labor.db`) across restarts and code deployments.
+- **Storage**: Uses a Docker volume (`labor_data`) to persist the SQLite database (`/app/data/dev.db`) across restarts and code deployments.
 - **Auto-Migration**: The container automatically applies database schema updates on startup.
 - **Auto-Seeding Safety**: Built-in protection to prevent production data overwrite during deployments.
 

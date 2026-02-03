@@ -46,6 +46,7 @@ app.get('/api/landmarks', async (_req, res) => {
         });
         res.json(landmarks);
     } catch (error) {
+        console.error('Fetch landmarks error:', error);
         res.status(500).json({ error: 'Failed to fetch landmarks' });
     }
 });
