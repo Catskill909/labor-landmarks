@@ -27,6 +27,7 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server ./server
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/src/data ./src/data
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Environment variables
@@ -39,5 +40,5 @@ RUN mkdir -p /app/data
 
 EXPOSE 3001
 
-# Initialize DB and start server
-CMD ["sh", "-c", "npx prisma migrate deploy && tsx server/index.ts"]
+# Initialize DB, Seed Data, and start server
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts && tsx server/index.ts"]
