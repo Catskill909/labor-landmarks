@@ -32,13 +32,13 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Environment variables
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=3000
 # Default database location inside the container volume
 ENV DATABASE_URL="file:/app/data/labor.db"
 
 RUN mkdir -p /app/data
 
-EXPOSE 3001
+EXPOSE 3000
 
 # Initialize DB, Seed Data, and start server
 CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts && tsx server/index.ts"]
