@@ -40,5 +40,5 @@ RUN mkdir -p /app/data
 
 EXPOSE 3000
 
-# Initialize DB (migrate only) and start server
-CMD ["sh", "-c", "npx prisma migrate deploy && tsx server/index.ts"]
+# Initialize DB (migrate), seed if empty, and start server
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts && tsx server/index.ts"]

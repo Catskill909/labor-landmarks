@@ -9,7 +9,17 @@ const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 async function main() {
-    const landmarksPath = path.join(__dirname, '../src/data/landmarks.json');
+    const importedPath = path.join(__dirname, '../src/data/landmarks_imported.json');
+    const defaultPath = path.join(__dirname, '../src/data/landmarks.json');
+
+    let landmarksPath = defaultPath;
+    if (fs.existsSync(importedPath)) {
+        landmarksPath = importedPath;
+        console.log('Using imported landmarks for seeding...');
+    } else {
+        console.log('Using default landmarks for seeding...');
+    }
+
     const data = JSON.parse(fs.readFileSync(landmarksPath, 'utf8'));
 
     // Check if database is empty
