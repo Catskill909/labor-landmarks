@@ -260,15 +260,14 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Country</label>
-                            <select
+                            <input
                                 required
+                                type="text"
                                 value={formData.country}
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 appearance-none"
-                            >
-                                <option value="USA">USA</option>
-                                <option value="Canada">Canada</option>
-                            </select>
+                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                placeholder="USA"
+                            />
                         </div>
 
                         <div className="md:col-span-2">

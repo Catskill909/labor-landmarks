@@ -110,6 +110,12 @@ You add 50 new landmarks locally (via scraping or manual entry) and want them on
         -   It finds manual records by `Name + Location` and **Skips** duplicates.
         -   It **Adds** completely new records.
     -   *Result*: Your Production user edits remain safe, and your new local data is added seamlessly.
+#### Scenario C: Bulk Data Correction (The current fix)
+If you run a script locally (like `fix_international_data.ts`) to fix hundreds of errors (e.g., changing "USA" to "United Kingdom"):
+1.  **Verify Local**: Refresh your local browser to ensure the map looks correct.
+2.  **Export Local**: Run `bash download_backup.sh` (or use the Admin Dashboard) to get a **clean** JSON file.
+3.  **Push Code**: Commit and push your `schema.prisma` and UI changes to GitHub/Coolify.
+4.  **Import to Prod**: Open your Production Admin Dashboard and **Import** that new clean JSON file. The system will update the existing records in the production volume with the new, corrected metadata.
 
 ### 3. Critical Technical Configs (For Coolify/Docker)
 

@@ -13,6 +13,7 @@ const convertedData = scrapedData.map((item, index) => {
         name: item.name || '',
         city: item.city || '',
         state: item.state || '',
+        country: item.country || '',
         category: item.type || '',
         description: item.description || '',
         address: item.address || '',
