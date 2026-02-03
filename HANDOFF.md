@@ -69,7 +69,12 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
 - [x] **Review Queue**: Admin Dashboard tab to approve/reject draft submissions.
 - [x] **Draft Status**: `isPublished` flag in database to separate live vs. pending items.
 
-### Phase 6: Future Enhancements (Recommended Next)
+### Phase 6: UX & Reliability Polish (Completed)
+- [x] **Map UX**: Fixed marker click behavior (auto-center/zoom) and improved popup styling (wider, no header overlap).
+- [x] **Admin Consistency**: Replaced all native browser alerts with custom `ConfirmationModal` components for a unified, modern design.
+- [x] **Data Integrity**: Established database restoration workflow and verified persistence.
+
+### Phase 7: Future Enhancements (Recommended Next)
 - [ ] **Email Notifications**:
     - **Strategy**: Use your existing `server/index.ts` to trigger emails when a new suggestion arrives.
     - **Option A (Recommended)**: **Resend**. Modern, free tier, easy API. (`npm install resend`).

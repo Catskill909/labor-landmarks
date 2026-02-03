@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check
 import { Link } from 'react-router-dom';
 import type { Landmark } from './LandmarkCard';
 import LandmarkModal from './LandmarkModal.tsx';
+import ConfirmationModal from './ConfirmationModal.tsx';
 
 // Admin Dashboard for managing landmarks
 const AdminDashboard: React.FC = () => {
@@ -14,6 +15,16 @@ const AdminDashboard: React.FC = () => {
     const [selectedLandmark, setSelectedLandmark] = useState<Landmark | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [filterStatus, setFilterStatus] = useState<'published' | 'draft'>('published');
+
+    // Modal States
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
+    const [alertState, setAlertState] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string | React.ReactNode;
+        type: 'alert' | 'success' | 'error';
+    }>({ isOpen: false, title: '', message: '', type: 'alert' });
 
     // Fetch Admin Data (All records)
     const fetchAdminLandmarks = async () => {
@@ -55,14 +66,25 @@ const AdminDashboard: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: number) => {
-        if (confirm('Are you sure you want to delete this landmark? This action cannot be undone.')) {
-            try {
-                await fetch(`/api/landmarks/${id}`, { method: 'DELETE' });
-                fetchAdminLandmarks();
-            } catch (error) {
-                console.error('Error deleting landmark:', error);
-            }
+    const confirmDelete = (id: number) => {
+        setDeleteId(id);
+    };
+
+    const handleDelete = async () => {
+        if (deleteId === null) return;
+
+        try {
+            await fetch(`/api/landmarks/${deleteId}`, { method: 'DELETE' });
+            fetchAdminLandmarks();
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Error deleting landmark:', error);
+            setAlertState({
+                isOpen: true,
+                title: 'Error',
+                message: 'Failed to delete landmark.',
+                type: 'error'
+            });
         }
     };
 
@@ -83,18 +105,26 @@ const AdminDashboard: React.FC = () => {
         fileInputRef.current?.click();
     };
 
-    const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
-            alert('Please select a valid JSON file.');
+            setAlertState({
+                isOpen: true,
+                title: 'Invalid File',
+                message: 'Please select a valid JSON file.',
+                type: 'error'
+            });
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
-        if (!confirm('Are you sure you want to import this file? This will merge new data into the database.')) {
-            return;
-        }
+        setPendingImportFile(file);
+    };
+
+    const executeImport = () => {
+        if (!pendingImportFile) return;
 
         setImporting(true);
         const reader = new FileReader();
@@ -110,17 +140,40 @@ const AdminDashboard: React.FC = () => {
                 if (!response.ok) throw new Error('Import failed');
 
                 const result = await response.json();
-                alert(`Import Successful!\nAdded: ${result.stats.added}\nUpdated: ${result.stats.updated}\nSkipped: ${result.stats.skipped}`);
+
+                setPendingImportFile(null); // Close confirm modal
+
+                setAlertState({
+                    isOpen: true,
+                    title: 'Import Successful',
+                    type: 'success',
+                    message: (
+                        <div className="space-y-2">
+                            <p>Data has been successfully imported.</p>
+                            <div className="bg-white/5 rounded-lg p-3 space-y-1 text-sm font-mono">
+                                <div className="flex justify-between"><span>Added:</span> <span className="text-green-400">{result.stats.added}</span></div>
+                                <div className="flex justify-between"><span>Updated:</span> <span className="text-blue-400">{result.stats.updated}</span></div>
+                                <div className="flex justify-between"><span>Skipped:</span> <span className="text-gray-500">{result.stats.skipped}</span></div>
+                            </div>
+                        </div>
+                    )
+                });
+
                 fetchAdminLandmarks();
             } catch (error) {
                 console.error('Import error:', error);
-                alert('Failed to import data. Check console for details.');
+                setAlertState({
+                    isOpen: true,
+                    title: 'Import Failed',
+                    message: 'Failed to import data. Please check the file format and try again.',
+                    type: 'error'
+                });
             } finally {
                 setImporting(false);
                 if (fileInputRef.current) fileInputRef.current.value = '';
             }
         };
-        reader.readAsText(file);
+        reader.readAsText(pendingImportFile);
     };
 
     // Calculate Counts
@@ -158,7 +211,7 @@ const AdminDashboard: React.FC = () => {
                         <input
                             type="file"
                             ref={fileInputRef}
-                            onChange={handleImportFile}
+                            onChange={handleFileSelect}
                             className="hidden"
                             accept=".json"
                         />
@@ -285,7 +338,7 @@ const AdminDashboard: React.FC = () => {
                                                 <Edit2 size={16} />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(landmark.id)}
+                                                onClick={() => confirmDelete(landmark.id)}
                                                 className="p-2 rounded-lg bg-zinc-800 text-gray-400 hover:text-red-500 hover:bg-zinc-700 transition-all"
                                                 title="Delete"
                                             >
@@ -313,6 +366,41 @@ const AdminDashboard: React.FC = () => {
                     setIsModalOpen(false);
                     fetchAdminLandmarks();
                 }}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Delete Landmark"
+                message="Are you sure you want to delete this landmark? This action cannot be undone."
+                isDestructive={true}
+                confirmText="Delete"
+            />
+
+            {/* Import Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={pendingImportFile !== null}
+                onClose={() => {
+                    setPendingImportFile(null);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                onConfirm={executeImport}
+                title="Import Database"
+                message={`Are you sure you want to import "${pendingImportFile?.name}"? This will merge new data into the database.`}
+                confirmText="Import"
+                isLoading={importing}
+                type="confirm"
+            />
+
+            {/* General Alert/Result Modal */}
+            <ConfirmationModal
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
             />
         </div>
     );

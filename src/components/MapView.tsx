@@ -25,6 +25,13 @@ interface MapViewProps {
 const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
     const map = useMap();
 
+    React.useEffect(() => {
+        if (landmarks.length > 0) {
+            const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
+            map.flyToBounds(bounds, { padding: [10, 10], maxZoom: 14 });
+        }
+    }, [landmarks, map]);
+
     return (
         <>
             {landmarks.map((landmark) => (
