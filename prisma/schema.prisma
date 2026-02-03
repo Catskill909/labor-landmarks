@@ -17,6 +17,9 @@ model Landmark {
   address     String
   lat         Float
   lng         Float
+  email       String?
+  website     String?
+  telephone   String?
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

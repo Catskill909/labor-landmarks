@@ -33,7 +33,10 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         description: '',
         address: '',
         lat: '',
-        lng: ''
+        lng: '',
+        email: '',
+        website: '',
+        telephone: ''
     });
 
     // Autocomplete State
@@ -52,7 +55,10 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 description: landmark.description,
                 address: landmark.address,
                 lat: landmark.lat.toString(),
-                lng: landmark.lng.toString()
+                lng: landmark.lng.toString(),
+                email: landmark.email || '',
+                website: landmark.website || '',
+                telephone: landmark.telephone || ''
             });
         } else {
             setFormData({
@@ -63,7 +69,10 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 description: '',
                 address: '',
                 lat: '',
-                lng: ''
+                lng: '',
+                email: '',
+                website: '',
+                telephone: ''
             });
             setQuery('');
         }
@@ -274,6 +283,39 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
                                 placeholder="Detailed history of the landmark..."
                             />
+                        </div>
+
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Telephone (Optional)</label>
+                                <input
+                                    type="tel"
+                                    value={formData.telephone}
+                                    onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                    placeholder="(555) 000-0000"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Email (Optional)</label>
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                    placeholder="contact@example.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Website (Optional)</label>
+                                <input
+                                    type="url"
+                                    value={formData.website}
+                                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                    placeholder="https://..."
+                                />
+                            </div>
                         </div>
 
                         <div className="md:col-span-2">

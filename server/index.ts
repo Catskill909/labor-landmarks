@@ -21,6 +21,7 @@ app.use(express.json());
 
 // GET all landmarks (Public API - Published only)
 app.get('/api/landmarks', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
     try {
         const landmarks = await prisma.landmark.findMany({
             where: { isPublished: true },
@@ -34,6 +35,7 @@ app.get('/api/landmarks', async (req, res) => {
 
 // GET all landmarks (Admin API - All records)
 app.get('/api/admin/landmarks', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
     try {
         const landmarks = await prisma.landmark.findMany({
             orderBy: { createdAt: 'desc' }
@@ -63,7 +65,7 @@ app.get('/api/landmarks/:id', async (req, res) => {
 
 // POST new landmark (Admin or Public Suggestion)
 app.post('/api/landmarks', async (req, res) => {
-    const { name, city, state, category, description, address, lat, lng, isPublished } = req.body;
+    const { name, city, state, category, description, address, lat, lng, isPublished, email, website, telephone } = req.body;
     try {
         // Default isPublished to false if not provided (Public Suggestion)
         const publishedStatus = isPublished !== undefined ? isPublished : false;
@@ -82,8 +84,11 @@ app.post('/api/landmarks', async (req, res) => {
                 address,
                 lat: isNaN(parsedLat) ? 0 : parsedLat,
                 lng: isNaN(parsedLng) ? 0 : parsedLng,
-                isPublished: publishedStatus
-            }
+                isPublished: publishedStatus,
+                email,
+                website,
+                telephone
+            } as any
         });
         res.status(201).json(newLandmark);
     } catch (error) {
@@ -95,7 +100,7 @@ app.post('/api/landmarks', async (req, res) => {
 // PUT update landmark
 app.put('/api/landmarks/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, city, state, category, description, address, lat, lng, isPublished } = req.body;
+    const { name, city, state, category, description, address, lat, lng, isPublished, email, website, telephone } = req.body;
     try {
         const updatedLandmark = await prisma.landmark.update({
             where: { id: parseInt(id) },
@@ -108,8 +113,11 @@ app.put('/api/landmarks/:id', async (req, res) => {
                 address,
                 lat: parseFloat(lat),
                 lng: parseFloat(lng),
-                isPublished // Allow toggling published status
-            }
+                isPublished, // Allow toggling published status
+                email,
+                website,
+                telephone
+            } as any
         });
         res.json(updatedLandmark);
     } catch (error) {
@@ -140,5 +148,6 @@ app.get(/.*/, (req, res) => {
 });
 
 app.listen(port, () => {
+    console.log(`SERVER_v2_STARTED_ON_PORT_${port}`);
     console.log(`Server running at http://localhost:${port}`);
 });

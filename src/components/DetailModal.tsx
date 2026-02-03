@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, MapPin, Calendar, Info, Navigation, ExternalLink } from 'lucide-react';
+import { X, MapPin, Info, Navigation, ExternalLink, Phone, Mail, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -78,7 +78,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                 </h2>
                                 <div className="flex flex-wrap gap-2 mb-6">
                                     {landmark.category.split(',').map((cat) => (
-                                        <span key={cat.trim()} className="text-xs font-bold text-gray-400 bg-white/5 border border-white/5 px-3 py-1 rounded-full uppercase tracking-wider">
+                                        <span key={cat.trim()} className="text-[10px] font-bold text-red-500 bg-red-500/5 border border-red-500/30 px-3 py-1 rounded-lg uppercase tracking-wider backdrop-blur-sm">
                                             {cat.trim()}
                                         </span>
                                     ))}
@@ -95,15 +95,44 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                         <p className="text-sm font-medium">{landmark.city}, {landmark.state}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-gray-300">
-                                    <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                        <Calendar size={16} className="text-red-500" />
+
+                                {landmark.telephone && (
+                                    <div className="flex items-center gap-3 text-gray-300">
+                                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                            <Phone size={16} className="text-red-500" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Telephone</p>
+                                            <p className="text-sm font-medium">{landmark.telephone}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Established</p>
-                                        <p className="text-sm font-medium">Historical Landmark</p>
+                                )}
+
+                                {landmark.email && (
+                                    <div className="flex items-center gap-3 text-gray-300">
+                                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                            <Mail size={16} className="text-red-500" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Email</p>
+                                            <a href={`mailto:${landmark.email}`} className="text-sm font-medium hover:text-red-400 transition-colors">{landmark.email}</a>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+
+                                {landmark.website && (
+                                    <div className="flex items-center gap-3 text-gray-300">
+                                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                            <Globe size={16} className="text-red-500" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Website</p>
+                                            <a href={landmark.website.startsWith('http') ? landmark.website : `https://${landmark.website}`} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-red-400 transition-colors break-all">
+                                                {landmark.website.replace(/^https?:\/\//, '')}
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -144,12 +173,19 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-4 p-8 pt-0 mt-auto">
-                                <button className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-red-900/20 active:scale-95">
-                                    <ExternalLink size={18} />
-                                    Official Site
-                                </button>
-                            </div>
+                            {landmark.website && (
+                                <div className="flex flex-wrap gap-4 p-8 pt-0 mt-auto">
+                                    <a
+                                        href={landmark.website.startsWith('http') ? landmark.website : `https://${landmark.website}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-5 text-sm rounded-xl transition-all shadow-lg shadow-red-900/20 active:scale-95"
+                                    >
+                                        <ExternalLink size={14} />
+                                        Official Site
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 </div>

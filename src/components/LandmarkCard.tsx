@@ -12,6 +12,9 @@ export interface Landmark {
     address: string;
     lat: number;
     lng: number;
+    email?: string;
+    website?: string;
+    telephone?: string;
     isPublished?: boolean;
 }
 

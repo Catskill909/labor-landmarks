@@ -40,10 +40,11 @@ function App() {
   const filteredLandmarks = useMemo(() => {
     return landmarks.filter(l => {
       const query = searchQuery.toLowerCase();
+      const nameMatch = l.name.toLowerCase().includes(query);
       const cityMatch = l.city.toLowerCase().includes(query);
       const stateMatch = l.state.toLowerCase().includes(query);
       const categoryMatch = selectedCategory === '' || l.category.includes(selectedCategory);
-      return (cityMatch || stateMatch) && categoryMatch;
+      return (nameMatch || cityMatch || stateMatch) && categoryMatch;
     });
   }, [landmarks, searchQuery, selectedCategory]);
 
