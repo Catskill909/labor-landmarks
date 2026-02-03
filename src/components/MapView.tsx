@@ -28,7 +28,10 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
     React.useEffect(() => {
         if (landmarks.length > 0) {
             const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
-            map.flyToBounds(bounds, { padding: [10, 10], maxZoom: 14 });
+            // Small timeout to ensure map container is ready for animation on initial load
+            setTimeout(() => {
+                map.flyToBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+            }, 100);
         }
     }, [landmarks, map]);
 
@@ -75,9 +78,10 @@ const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
                 zoom={4}
                 style={{ height: '100%', width: '100%' }}
                 scrollWheelZoom={true}
+                attributionControl={false}
+                zoomSnap={0.25}
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <MapMarkers landmarks={landmarks} onSelectLandmark={onSelectLandmark} />
