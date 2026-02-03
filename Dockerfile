@@ -31,7 +31,10 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 # Environment variables
 ENV NODE_ENV=production
 ENV PORT=3001
-ENV DATABASE_URL="file:./dev.db"
+# Default database location inside the container volume
+ENV DATABASE_URL="file:/app/data/labor.db"
+
+RUN mkdir -p /app/data
 
 EXPOSE 3001
 

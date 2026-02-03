@@ -9,11 +9,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      # Persist SQLite DB in a volume mapped to /data inside container
-      - DATABASE_URL=file:/data/labor.db
+      # DATABASE_URL is set in Dockerfile to /app/data/labor.db
     volumes:
-      # Map the named volume to /data
-      - labor_data:/data
+      # Map the named volume to the data directory
+      - labor_data:/app/data
 
 volumes:
   labor_data:
