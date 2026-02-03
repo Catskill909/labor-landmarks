@@ -9,7 +9,7 @@ import AdminDashboard from './components/AdminDashboard';
 import type { Landmark } from './components/LandmarkCard';
 
 function App() {
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null);

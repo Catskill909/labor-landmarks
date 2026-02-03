@@ -64,15 +64,18 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
 - [x] **Persistence**: Configure a Docker volume for the `sqlite.db` file to ensure data survives container restarts.
 - [x] **Environment Variables**: Move API URLs and secret keys to `.env`.
 
-### Phase 4: Security & Polish (Recommended Next)
-- [ ] **Authentication**: Secure the `/admin` route with password protection (Simple Auth or Clerk/Auth0).
-- [ ] **SEO & Metadata**: Add dynamic Open Graph tags so sharing a specific landmark (e.g., `/landmark/123`) shows a preview card.
-- [ ] **Image Upload**: Replace image URLs with actual file uploads (stored in SQLite blob or filesystem volume).
+### Phase 5: Public Contributions & Moderation (Completed)
+- [x] **Suggestions**: "Suggest a Site" modal for public users with address autocomplete.
+- [x] **Review Queue**: Admin Dashboard tab to approve/reject draft submissions.
+- [x] **Draft Status**: `isPublished` flag in database to separate live vs. pending items.
 
-### Phase 5: Advanced Features (Future)
-- [ ] **Crowdsourcing**: Public "Suggest a Landmark" form with admin moderation queue.
-- [ ] **Clusters**: Use map clustering for areas with high density (e.g., Chicago, NYC).
-- [ ] **Tours**: Ability to group landmarks into a "Tour" (e.g., "Mother Jones Trail").
+### Phase 6: Future Enhancements (Recommended Next)
+- [ ] **Email Notifications**:
+    - **Strategy**: Use your existing `server/index.ts` to trigger emails when a new suggestion arrives.
+    - **Option A (Recommended)**: **Resend**. Modern, free tier, easy API. (`npm install resend`).
+    - **Option B**: **Nodemailer**. Use your own SMTP/Gmail. Zero cost, slightly more config.
+- [ ] **Authentication**: Secure the `/admin` route with password protection (Simple Auth or Clerk/Auth0).
+- [ ] **Image Upload**: Replace image URLs with actual file uploads (stored in filesystem volume).
 - [ ] **Export/Import**: CSV backup tools for the admin.
 
 ---

@@ -20,12 +20,18 @@ interface NominatimResult {
     };
 }
 
+const CATEGORIES = [
+    'Art', 'Bas-relief', 'Bust', 'Fresco', 'Gravesite', 'Historical marker',
+    'Labor history organization', 'Memorial', 'Monument', 'Mural', 'Museum',
+    'Plaque', 'Sculpture', 'Statue', 'Structure', 'Union Hall', 'Walking Tour'
+];
+
 export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProps) {
     const [formData, setFormData] = useState({
         name: '',
         city: '',
         state: '',
-        category: 'Labor Union',
+        category: '',
         description: '',
         address: '',
         lat: '',
@@ -47,7 +53,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                 name: '',
                 city: '',
                 state: '',
-                category: 'Labor Union',
+                category: '',
                 description: '',
                 address: '',
                 lat: '',
@@ -100,6 +106,17 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         }));
         setQuery(item.display_name);
         setShowSuggestions(false);
+    };
+
+    const toggleCategory = (cat: string) => {
+        const currentCats = formData.category ? formData.category.split(',').map(c => c.trim()).filter(c => c !== '') : [];
+        let newCats: string[];
+        if (currentCats.includes(cat)) {
+            newCats = currentCats.filter(c => c !== cat);
+        } else {
+            newCats = [...currentCats, cat];
+        }
+        setFormData(prev => ({ ...prev, category: newCats.join(', ') }));
     };
 
     if (!isOpen) return null;
@@ -241,20 +258,25 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Category</label>
-                                <select
-                                    value={formData.category}
-                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 appearance-none"
-                                >
-                                    <option value="Labor Union">Labor Union</option>
-                                    <option value="Strike/Event">Strike / Event</option>
-                                    <option value="Monument/Memorial">Monument / Memorial</option>
-                                    <option value="Building/Headquarters">Building / Headquarters</option>
-                                    <option value="Museum/Archive">Museum / Archive</option>
-                                    <option value="Cemetery/Grave">Cemetery / Grave</option>
-                                    <option value="Mural/Art">Mural / Art</option>
-                                </select>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Categories (Select one or more)</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {CATEGORIES.map(cat => {
+                                        const isSelected = formData.category.split(',').map(c => c.trim()).includes(cat);
+                                        return (
+                                            <button
+                                                key={cat}
+                                                type="button"
+                                                onClick={() => toggleCategory(cat)}
+                                                className={`px-4 py-2 rounded-full text-xs font-bold border transition-all duration-200 ${isSelected
+                                                    ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-900/20 active-pill'
+                                                    : 'bg-zinc-900 text-gray-400 border-white/10 hover:border-red-500/50 hover:text-white'
+                                                    }`}
+                                            >
+                                                {cat}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             <div className="md:col-span-2">

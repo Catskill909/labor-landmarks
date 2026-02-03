@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, MapPin, Loader2 } from 'lucide-react';
 import type { Landmark } from './LandmarkCard';
+
+interface NominatimResult {
+    display_name: string;
+    lat: string;
+    lon: string;
+    address: {
+        city?: string;
+        town?: string;
+        village?: string;
+        state?: string;
+        ISO3166_2_lvl4?: string; // State Code like US-IL
+    };
+}
 
 interface LandmarkModalProps {
     isOpen: boolean;
@@ -8,6 +21,12 @@ interface LandmarkModalProps {
     landmark?: Landmark;
     onSuccess: () => void;
 }
+
+const CATEGORIES = [
+    'Art', 'Bas-relief', 'Bust', 'Fresco', 'Gravesite', 'Historical marker',
+    'Labor history organization', 'Memorial', 'Monument', 'Mural', 'Museum',
+    'Plaque', 'Sculpture', 'Statue', 'Structure', 'Union Hall', 'Walking Tour'
+];
 
 const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark, onSuccess }) => {
     const [formData, setFormData] = useState({
@@ -20,6 +39,12 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         lat: '',
         lng: ''
     });
+
+    // Autocomplete State
+    const [query, setQuery] = useState('');
+    const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         if (landmark) {
@@ -44,8 +69,65 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 lat: '',
                 lng: ''
             });
+            setQuery('');
         }
     }, [landmark, isOpen]);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (query.length > 2 && showSuggestions) {
+                setIsSearching(true);
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=us`, {
+                        headers: {
+                            'User-Agent': 'LaborLandmarksApp/1.0'
+                        }
+                    });
+                    const data = await res.json();
+                    setSuggestions(data);
+                } catch (error) {
+                    console.error("Geocoding failed", error);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else if (query.length <= 2) {
+                setSuggestions([]);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [query, showSuggestions]);
+
+    const handleSelectAddress = (item: NominatimResult) => {
+        // Parse State code if possible, Nominatim usually gives "ISO3166_2_lvl4" like "US-NY"
+        let stateCode = item.address.state || '';
+        if (item.address.ISO3166_2_lvl4) {
+            stateCode = item.address.ISO3166_2_lvl4.replace('US-', '');
+        }
+
+        setFormData(prev => ({
+            ...prev,
+            address: item.display_name,
+            lat: item.lat,
+            lng: item.lon,
+            city: item.address.city || item.address.town || item.address.village || '',
+            state: stateCode
+        }));
+        setQuery(item.display_name);
+        setShowSuggestions(false);
+    };
+
+    const toggleCategory = (cat: string) => {
+        const currentCats = formData.category ? formData.category.split(',').map(c => c.trim()).filter(c => c !== '') : [];
+        let newCats: string[];
+        if (currentCats.includes(cat)) {
+            newCats = currentCats.filter(c => c !== cat);
+        } else {
+            newCats = [...currentCats, cat];
+        }
+        setFormData(prev => ({ ...prev, category: newCats.join(', ') }));
+    };
 
     if (!isOpen) return null;
 
@@ -88,7 +170,44 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[75vh]">
+                    {/* Address Search */}
+                    <div className="relative z-10 w-full mb-6">
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Address Search (Auto-fills location)</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={query}
+                                onChange={e => {
+                                    setQuery(e.target.value);
+                                    setShowSuggestions(true);
+                                }}
+                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 pl-10"
+                                placeholder="Start typing address..."
+                            />
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                            {isSearching && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 animate-spin" size={18} />
+                            )}
+                        </div>
+
+                        {/* Suggestions Dropdown */}
+                        {showSuggestions && suggestions.length > 0 && (
+                            <div className="absolute left-0 right-0 mt-2 bg-black border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
+                                {suggestions.map((item, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => handleSelectAddress(item)}
+                                        className="w-full text-left px-4 py-3 hover:bg-zinc-800 text-sm text-gray-300 border-b border-white/5 last:border-0 transition-colors"
+                                    >
+                                        {item.display_name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Landmark Name</label>
@@ -128,15 +247,25 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Categories (Comma separated)</label>
-                            <input
-                                required
-                                type="text"
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
-                                placeholder="Museum, Memorial, Statue"
-                            />
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Categories (Select one or more)</label>
+                            <div className="flex flex-wrap gap-2">
+                                {CATEGORIES.map(cat => {
+                                    const isSelected = formData.category.split(',').map(c => c.trim()).includes(cat);
+                                    return (
+                                        <button
+                                            key={cat}
+                                            type="button"
+                                            onClick={() => toggleCategory(cat)}
+                                            className={`px-4 py-2 rounded-full text-xs font-bold border transition-all duration-200 ${isSelected
+                                                ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-900/20'
+                                                : 'bg-zinc-900 text-gray-400 border-white/10 hover:border-red-500/50 hover:text-white'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         <div className="md:col-span-2">
