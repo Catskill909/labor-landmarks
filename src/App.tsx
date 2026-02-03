@@ -129,7 +129,7 @@ function App() {
             </footer>
           </div>
         } />
-        <Route path="/admin" element={<AdminDashboard landmarks={landmarks} onUpdate={fetchLandmarks} />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );

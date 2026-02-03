@@ -12,6 +12,7 @@ export interface Landmark {
     address: string;
     lat: number;
     lng: number;
+    isPublished?: boolean;
 }
 
 interface LandmarkCardProps {

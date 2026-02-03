@@ -17,6 +17,7 @@ model Landmark {
   address     String
   lat         Float
   lng         Float
+  isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

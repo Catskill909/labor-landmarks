@@ -26,6 +26,7 @@ async function main() {
                 address: item.address,
                 lat: item.lat,
                 lng: item.lng,
+                isPublished: true,
             },
             create: {
                 id: item.id,
@@ -37,6 +38,7 @@ async function main() {
                 address: item.address,
                 lat: item.lat,
                 lng: item.lng,
+                isPublished: true,
             },
         });
     }

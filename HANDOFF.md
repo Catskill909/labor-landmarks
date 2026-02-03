@@ -47,28 +47,33 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
 
 ## Phased Development Roadmap
 
-### Phase 1: Foundation (Current Focus)
-- [ ] Initialize Prisma with SQLite.
-- [ ] Create `schema.prisma` with `Landmark` model.
-- [ ] Write a `seed.ts` script to ingest existing `landmarks.json` into the DB.
-- [ ] Setup a basic Express server to serve as the API layer.
+### Phase 1: Foundation (Completed)
+- [x] Initialize Prisma with SQLite.
+- [x] Create `schema.prisma` with `Landmark` model.
+- [x] Write a `seed.ts` script to ingest existing `landmarks.json` into the DB.
+- [x] Setup a basic Express server to serve as the API layer.
 
-### Phase 2: Admin CRUD (Next)
-- [ ] Setup `react-router-dom` for `/` and `/admin` routes.
-- [ ] **API Endpoints**: GET, POST, PUT, DELETE for landmarks.
-- [ ] **Admin UI**: Table view of all landmarks with "Edit" and "Delete" actions.
-- [ ] **Landmark Form**: A robust modal-based form for adding/modifying landmarks.
+### Phase 2: Admin CRUD (Completed)
+- [x] Setup `react-router-dom` for `/` and `/admin` routes.
+- [x] **API Endpoints**: GET, POST, PUT, DELETE for landmarks.
+- [x] **Admin UI**: Table view of all landmarks with "Edit" and "Delete" actions.
+- [x] **Landmark Form**: A robust modal-based form for adding/modifying landmarks.
 
-### Phase 3: Deployment & Persistence
-- [ ] **Dockerization**: Create a `Dockerfile` that builds the frontend and runs the Node server.
-- [ ] **Persistence**: Configure a Docker volume for the `sqlite.db` file to ensure data survives container restarts.
-- [ ] **Environment Variables**: Move API URLs and secret keys to `.env`.
+### Phase 3: Deployment & Persistence (Completed)
+- [x] **Dockerization**: Create a `Dockerfile` that builds the frontend and runs the Node server.
+- [x] **Persistence**: Configure a Docker volume for the `sqlite.db` file to ensure data survives container restarts.
+- [x] **Environment Variables**: Move API URLs and secret keys to `.env`.
 
-### Phase 4: Enhancements & Polish
-- [ ] **Authentication**: Add a simple admin login (JWT-based).
-- [ ] **Image Management**: Implement local storage for image uploads or integration with an S3-compatible service (e.g., Minio).
-- [ ] **Search Upgrades**: Geolocation-based "landmarks near me" search.
-- [ ] **Rich Media**: Support for video links or audio clips in landmark descriptions.
+### Phase 4: Security & Polish (Recommended Next)
+- [ ] **Authentication**: Secure the `/admin` route with password protection (Simple Auth or Clerk/Auth0).
+- [ ] **SEO & Metadata**: Add dynamic Open Graph tags so sharing a specific landmark (e.g., `/landmark/123`) shows a preview card.
+- [ ] **Image Upload**: Replace image URLs with actual file uploads (stored in SQLite blob or filesystem volume).
+
+### Phase 5: Advanced Features (Future)
+- [ ] **Crowdsourcing**: Public "Suggest a Landmark" form with admin moderation queue.
+- [ ] **Clusters**: Use map clustering for areas with high density (e.g., Chicago, NYC).
+- [ ] **Tours**: Ability to group landmarks into a "Tour" (e.g., "Mother Jones Trail").
+- [ ] **Export/Import**: CSV backup tools for the admin.
 
 ---
 

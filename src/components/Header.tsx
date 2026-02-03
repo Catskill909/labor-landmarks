@@ -1,5 +1,6 @@
 import React from 'react';
-import { Landmark, Search, Map, List, X } from 'lucide-react';
+import { Landmark, Search, Map, List, X, Plus } from 'lucide-react';
+import SuggestionModal from './SuggestionModal';
 
 interface HeaderProps {
     searchQuery: string;
@@ -14,6 +15,8 @@ const Header: React.FC<HeaderProps> = ({
     viewMode,
     setViewMode
 }) => {
+    const [isSuggestionOpen, setIsSuggestionOpen] = React.useState(false);
+
     return (
         <header className="sticky top-0 z-50 w-full glass px-6 py-3 flex items-center justify-between border-b border-white/5 gap-6">
             <div className="flex items-center gap-3 min-w-fit">
@@ -46,29 +49,41 @@ const Header: React.FC<HeaderProps> = ({
                 )}
             </div>
 
-            {/* View Switcher - Moved to Header */}
-            <div className="flex items-center bg-zinc-900/80 p-1 rounded-xl border border-white/5 min-w-fit">
+            {/* View Switcher & Actions */}
+            <div className="flex items-center gap-4">
                 <button
-                    onClick={() => setViewMode('map')}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-300 ${viewMode === 'map'
-                        ? 'bg-red-600 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white'
-                        }`}
+                    onClick={() => setIsSuggestionOpen(true)}
+                    className="hidden lg:flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium text-white rounded-lg transition-all border border-white/5"
                 >
-                    <Map size={16} />
-                    <span className="text-sm font-bold hidden md:inline">Map</span>
+                    <Plus size={16} className="text-red-400" />
+                    Suggest Site
                 </button>
-                <button
-                    onClick={() => setViewMode('list')}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-300 ${viewMode === 'list'
-                        ? 'bg-red-600 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white'
-                        }`}
-                >
-                    <List size={16} />
-                    <span className="text-sm font-bold hidden md:inline">List</span>
-                </button>
+
+                <div className="flex items-center bg-zinc-900/80 p-1 rounded-xl border border-white/5 min-w-fit">
+                    <button
+                        onClick={() => setViewMode('map')}
+                        className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-300 ${viewMode === 'map'
+                            ? 'bg-red-600 text-white shadow-lg'
+                            : 'text-gray-400 hover:text-white'
+                            }`}
+                    >
+                        <Map size={16} />
+                        <span className="text-sm font-bold hidden md:inline">Map</span>
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-300 ${viewMode === 'list'
+                            ? 'bg-red-600 text-white shadow-lg'
+                            : 'text-gray-400 hover:text-white'
+                            }`}
+                    >
+                        <List size={16} />
+                        <span className="text-sm font-bold hidden md:inline">List</span>
+                    </button>
+                </div>
             </div>
+
+            <SuggestionModal isOpen={isSuggestionOpen} onClose={() => setIsSuggestionOpen(false)} />
         </header>
     );
 };

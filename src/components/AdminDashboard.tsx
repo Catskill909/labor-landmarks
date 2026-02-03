@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Landmark } from './LandmarkCard';
 import LandmarkModal from './LandmarkModal';
 
-interface AdminDashboardProps {
-    landmarks: Landmark[];
-    onUpdate: () => void;
-}
-
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ landmarks, onUpdate }) => {
+const AdminDashboard: React.FC = () => {
+    const [landmarks, setLandmarks] = useState<Landmark[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLandmark, setSelectedLandmark] = useState<Landmark | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [filterStatus, setFilterStatus] = useState<'published' | 'draft'>('published');
 
-    const filteredLandmarks = landmarks.filter(l =>
-        l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.state.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Fetch Admin Data (All records)
+    const fetchAdminLandmarks = async () => {
+        try {
+            const response = await fetch('/api/admin/landmarks');
+            if (response.ok) {
+                const data = await response.json();
+                setLandmarks(data);
+            }
+        } catch (error) {
+            console.error('Error fetching admin landmarks:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAdminLandmarks();
+    }, []);
+
+    const filteredLandmarks = landmarks.filter(l => {
+        const matchesSearch = l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            l.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            l.state.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const isPublished = l.isPublished ?? true;
+        const matchesStatus = filterStatus === 'published' ? isPublished : !isPublished;
+
+        return matchesSearch && matchesStatus;
+    });
 
     const handleAdd = () => {
         setSelectedLandmark(undefined);
@@ -34,12 +56,37 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ landmarks, onUpdate }) 
         if (confirm('Are you sure you want to delete this landmark? This action cannot be undone.')) {
             try {
                 await fetch(`/api/landmarks/${id}`, { method: 'DELETE' });
-                onUpdate();
+                fetchAdminLandmarks();
             } catch (error) {
                 console.error('Error deleting landmark:', error);
             }
         }
     };
+
+    const handleApprove = async (landmark: Landmark) => {
+        try {
+            await fetch(`/api/landmarks/${landmark.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...landmark, isPublished: true })
+            });
+            fetchAdminLandmarks();
+        } catch (error) {
+            console.error('Error approving landmark:', error);
+        }
+    };
+
+    // Calculate Counts
+    const publishedCount = landmarks.filter(l => l.isPublished ?? true).length;
+    const draftCount = landmarks.filter(l => !(l.isPublished ?? true)).length;
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center text-white">
+                <Loader2 className="animate-spin text-red-600" size={48} />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-black text-white p-8">
@@ -71,11 +118,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ landmarks, onUpdate }) 
 
                 {/* Stats & Search */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    {/* Updated Stats Cards as requested */}
                     <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl">
-                        <p className="text-sm text-gray-500 mb-1">Total Landmarks</p>
-                        <p className="text-3xl font-bold">{landmarks.length}</p>
+                        <p className="text-sm text-gray-500 mb-1">Total Published</p>
+                        <p className="text-3xl font-bold text-white">{publishedCount}</p>
                     </div>
-                    <div className="md:col-span-3 bg-zinc-900 border border-white/5 p-6 rounded-2xl flex items-center gap-4">
+                    <div className="bg-zinc-900 border border-white/5 p-6 rounded-2xl relative overflow-hidden">
+                        <p className="text-sm text-gray-500 mb-1">Review Queue</p>
+                        <p className={`text-3xl font-bold ${draftCount > 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                            {draftCount}
+                        </p>
+                        {draftCount > 0 && (
+                            <div className="absolute top-4 right-4 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                        )}
+                    </div>
+
+                    <div className="md:col-span-2 bg-zinc-900 border border-white/5 p-6 rounded-2xl flex items-center gap-4">
                         <Search className="text-gray-500" size={20} />
                         <input
                             type="text"
@@ -85,6 +143,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ landmarks, onUpdate }) 
                             className="bg-transparent border-none text-white focus:outline-none w-full text-lg placeholder:text-gray-600"
                         />
                     </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex gap-4 mb-6 border-b border-white/10">
+                    <button
+                        onClick={() => setFilterStatus('published')}
+                        className={`pb-3 px-2 font-medium transition-colors border-b-2 ${filterStatus === 'published' ? 'border-red-500 text-white' : 'border-transparent text-gray-400 hover:text-white'}`}
+                    >
+                        Published ({publishedCount})
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus('draft')}
+                        className={`pb-3 px-2 font-medium transition-colors border-b-2 ${filterStatus === 'draft' ? 'border-red-500 text-white' : 'border-transparent text-gray-400 hover:text-white'}`}
+                    >
+                        Review Queue ({draftCount})
+                    </button>
                 </div>
 
                 {/* Table */}
@@ -120,6 +194,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ landmarks, onUpdate }) 
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            {(!landmark.isPublished && landmark.isPublished !== undefined) && (
+                                                <button
+                                                    onClick={() => handleApprove(landmark)}
+                                                    className="p-2 rounded-lg bg-green-900/30 text-green-500 hover:bg-green-900/50 hover:text-green-400 transition-all border border-green-500/20"
+                                                    title="Approve / Publish"
+                                                >
+                                                    <Check size={16} />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => handleEdit(landmark)}
                                                 className="p-2 rounded-lg bg-zinc-800 text-gray-400 hover:text-white hover:bg-zinc-700 transition-all"
@@ -154,7 +237,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ landmarks, onUpdate }) 
                 landmark={selectedLandmark}
                 onSuccess={() => {
                     setIsModalOpen(false);
-                    onUpdate();
+                    fetchAdminLandmarks();
                 }}
             />
         </div>

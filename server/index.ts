@@ -19,15 +19,28 @@ app.use(express.json());
 
 // API Endpoints
 
-// GET all landmarks
+// GET all landmarks (Public API - Published only)
 app.get('/api/landmarks', async (req, res) => {
+    try {
+        const landmarks = await prisma.landmark.findMany({
+            where: { isPublished: true },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(landmarks);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch landmarks' });
+    }
+});
+
+// GET all landmarks (Admin API - All records)
+app.get('/api/admin/landmarks', async (req, res) => {
     try {
         const landmarks = await prisma.landmark.findMany({
             orderBy: { createdAt: 'desc' }
         });
         res.json(landmarks);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch landmarks' });
+        res.status(500).json({ error: 'Failed to fetch admin landmarks' });
     }
 });
 
@@ -48,10 +61,17 @@ app.get('/api/landmarks/:id', async (req, res) => {
     }
 });
 
-// POST new landmark
+// POST new landmark (Admin or Public Suggestion)
 app.post('/api/landmarks', async (req, res) => {
-    const { name, city, state, category, description, address, lat, lng } = req.body;
+    const { name, city, state, category, description, address, lat, lng, isPublished } = req.body;
     try {
+        // Default isPublished to false if not provided (Public Suggestion)
+        const publishedStatus = isPublished !== undefined ? isPublished : false;
+
+        // Validation / Sanitization
+        const parsedLat = parseFloat(lat);
+        const parsedLng = parseFloat(lng);
+
         const newLandmark = await prisma.landmark.create({
             data: {
                 name,
@@ -60,12 +80,14 @@ app.post('/api/landmarks', async (req, res) => {
                 category,
                 description,
                 address,
-                lat: parseFloat(lat),
-                lng: parseFloat(lng)
+                lat: isNaN(parsedLat) ? 0 : parsedLat,
+                lng: isNaN(parsedLng) ? 0 : parsedLng,
+                isPublished: publishedStatus
             }
         });
         res.status(201).json(newLandmark);
     } catch (error) {
+        console.error('Error creating landmark:', error);
         res.status(500).json({ error: 'Failed to create landmark' });
     }
 });
@@ -73,7 +95,7 @@ app.post('/api/landmarks', async (req, res) => {
 // PUT update landmark
 app.put('/api/landmarks/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, city, state, category, description, address, lat, lng } = req.body;
+    const { name, city, state, category, description, address, lat, lng, isPublished } = req.body;
     try {
         const updatedLandmark = await prisma.landmark.update({
             where: { id: parseInt(id) },
@@ -85,7 +107,8 @@ app.put('/api/landmarks/:id', async (req, res) => {
                 description,
                 address,
                 lat: parseFloat(lat),
-                lng: parseFloat(lng)
+                lng: parseFloat(lng),
+                isPublished // Allow toggling published status
             }
         });
         res.json(updatedLandmark);
