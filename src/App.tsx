@@ -125,9 +125,33 @@ function App() {
             </footer>
           </div>
         } />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminRoute />} />
       </Routes>
     </Router>
   );
 }
+
+function AdminRoute() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Local dev skips auth
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return true;
+    }
+    // Check session storage
+    return sessionStorage.getItem('isAdminAuthenticated') === 'true';
+  });
+
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
+  if (!isAuthenticated) {
+    return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  return <AdminDashboard />;
+}
+
+import AdminLogin from './components/AdminLogin';
+
 export default App;

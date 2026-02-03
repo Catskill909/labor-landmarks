@@ -18,6 +18,23 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 // API Endpoints
+// Password Verification for Admin (Production only)
+app.post('/api/admin/verify-password', (req, res) => {
+    const { password } = req.body;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // If no password is set in env, we allow it for ease of initial setup/local dev 
+    // (though in local we skip this anyway in the frontend)
+    if (!adminPassword) {
+        return res.json({ success: true, message: 'No admin password configured on server' });
+    }
+
+    if (password === adminPassword) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, error: 'Invalid password' });
+    }
+});
 
 // GET all landmarks (Public API - Published only)
 app.get('/api/landmarks', async (_req, res) => {
@@ -42,6 +59,7 @@ app.get('/api/admin/landmarks', async (_req, res) => {
         });
         res.json(landmarks);
     } catch (error) {
+        console.error('Fetch landmarks error:', error);
         res.status(500).json({ error: 'Failed to fetch admin landmarks' });
     }
 });
@@ -59,6 +77,7 @@ app.get('/api/landmarks/:id', async (req, res) => {
             res.status(404).json({ error: 'Landmark not found' });
         }
     } catch (error) {
+        console.error('Fetch landmark error:', error);
         res.status(500).json({ error: 'Failed to fetch landmark' });
     }
 });
