@@ -307,7 +307,9 @@ const AdminDashboard: React.FC = () => {
                                         <div className="text-xs text-gray-500 truncate max-w-xs">{landmark.description}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm font-medium">{landmark.city}, {landmark.state}, {landmark.country}</div>
+                                        <div className="text-sm font-medium">
+                                            {[landmark.city, landmark.state, landmark.country].filter(Boolean).join(', ')}
+                                        </div>
                                         <div className="text-[10px] text-gray-500">{landmark.address}</div>
                                     </td>
                                     <td className="px-6 py-4">

@@ -92,7 +92,9 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                     </div>
                                     <div>
                                         <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Location</p>
-                                        <p className="text-sm font-medium">{landmark.city}, {landmark.state}, {landmark.country}</p>
+                                        <p className="text-sm font-medium">
+                                            {[landmark.city, landmark.state, landmark.country].filter(Boolean).join(', ')}
+                                        </p>
                                     </div>
                                 </div>
 
