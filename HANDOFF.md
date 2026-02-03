@@ -135,13 +135,27 @@ If you run a script locally (like `fix_international_data.ts`) to fix hundreds o
 
 ---
 
+## Utility & Maintenance Scripts (`/scripts`)
+
+Specialized TypeScript scripts are available for bulk database operations. Run them via `npx tsx scripts/[filename].ts`.
+
+1.  **`fix_international_data.ts`**:
+    - **Purpose**: Fixes landmarks mislabeled as "USA" based on coordinates (e.g., Lng > -30).
+    - **Logic**: Detects countries like "Denmark", "United Kingdom", etc., from descriptions and updates the `country` and `city` fields.
+    - **Geocoding**: Corrects specific known errors (e.g., Mather Mine, Kate Mullaney House).
+2.  **`recover_categories.ts`**:
+    - **Purpose**: Restores `category` field for records where the category was incorrectly set to the landmark's Name.
+    - **Logic**: Extracts the category tag (e.g., "Statue, Memorial") from the end of the `description` field.
+
+---
+
 ## AI Handoff Protocol
 When picking up from this document, future AI agents should:
-1. Verify the `prisma/schema.prisma` is up to date.
-2. Check if the `server/` directory exists and matches the API specifications.
-3. Ensure the `vite.config.ts` proxy is correctly pointing to the Express server port.
-4. Review `task.md` for the immediate next steps.
-5. **NEVER** re-enable auto-seeding in `Dockerfile` without explicit user confirmation.
+1.  **Check Data Health**: Run `npx tsx scripts/recover_categories.ts` if categories look like titles in the UI.
+2.  **Schema Context**: Note that `country` is optional (`String?`) and defaults to `null` to allow international flexibility.
+3.  **Local vs Prod**: Always confirm if the user wants to push **Code** (Git) or sync **Data** (Admin Export/Import).
+4.  **UI Consistency**: Maintain the "Glassmorphism" theme using Tailwind v4 custom tokens.
+5.  **NEVER** re-enable auto-seeding in `Dockerfile`; use `FORCE_SEED=true` only if explicitly requested.
 
 ---
 
