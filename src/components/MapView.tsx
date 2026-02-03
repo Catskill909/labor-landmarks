@@ -68,6 +68,50 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
     );
 };
 
+const ResetViewControl: React.FC<{ landmarks: Landmark[] }> = ({ landmarks }) => {
+    const map = useMap();
+
+    React.useEffect(() => {
+        const control = new L.Control({ position: 'topleft' });
+
+        control.onAdd = () => {
+            const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            const button = L.DomUtil.create('a', '', div);
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>';
+            button.href = '#';
+            button.title = 'Reset View';
+            button.style.width = '30px';
+            button.style.height = '30px';
+            button.style.display = 'flex';
+            button.style.alignItems = 'center';
+            button.style.justifyContent = 'center';
+            button.style.backgroundColor = 'white';
+            button.style.color = '#333';
+            button.style.cursor = 'pointer';
+
+            L.DomEvent.disableClickPropagation(div);
+
+            button.onclick = (e) => {
+                e.preventDefault();
+                if (landmarks.length > 0) {
+                    const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
+                    map.flyToBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+                }
+            };
+
+            return div;
+        };
+
+        control.addTo(map);
+
+        return () => {
+            control.remove();
+        };
+    }, [map, landmarks]);
+
+    return null;
+};
+
 const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
     const center: [number, number] = [39.8283, -98.5795]; // Geographical center of USA
 
@@ -85,6 +129,7 @@ const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <MapMarkers landmarks={landmarks} onSelectLandmark={onSelectLandmark} />
+                <ResetViewControl landmarks={landmarks} />
             </MapContainer>
         </div>
     );
