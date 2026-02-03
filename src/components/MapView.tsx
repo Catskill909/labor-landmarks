@@ -30,7 +30,11 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
             const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
             // Small timeout to ensure map container is ready for animation on initial load
             setTimeout(() => {
-                map.flyToBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+                map.flyToBounds(bounds, {
+                    paddingTopLeft: [20, 50],
+                    paddingBottomRight: [20, 20],
+                    maxZoom: 14
+                });
             }, 100);
         }
     }, [landmarks, map]);
@@ -95,7 +99,11 @@ const ResetViewControl: React.FC<{ landmarks: Landmark[] }> = ({ landmarks }) =>
                 e.preventDefault();
                 if (landmarks.length > 0) {
                     const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
-                    map.flyToBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+                    map.flyToBounds(bounds, {
+                        paddingTopLeft: [20, 50],
+                        paddingBottomRight: [20, 20],
+                        maxZoom: 14
+                    });
                 }
             };
 
