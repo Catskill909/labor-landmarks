@@ -189,20 +189,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                                 </div>
                             )}
 
-                            {landmark.sourceUrl && (
-                                <div className="p-8 pt-0 mt-auto">
-                                    <h4 className="text-zinc-600 font-bold text-[10px] uppercase tracking-widest mb-2">Original Source</h4>
-                                    <a
-                                        href={landmark.sourceUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1"
-                                    >
-                                        <ExternalLink size={10} />
-                                        View on Labor Radio Network
-                                    </a>
-                                </div>
-                            )}
+
                         </div>
                     </motion.div>
                 </div>

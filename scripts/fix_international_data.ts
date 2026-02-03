@@ -47,7 +47,7 @@ async function main() {
             await prisma.landmark.update({
                 where: { id: l.id },
                 data: {
-                    country: detectedCountry || null,
+                    country: detectedCountry || undefined,
                     city: detectedCity || '',
                     state: '' // Usually don't have states in Europe the same way
                 }
@@ -57,7 +57,7 @@ async function main() {
             console.log(`Unsetting USA for ${l.name} (Lng: ${l.lng})`);
             await prisma.landmark.update({
                 where: { id: l.id },
-                data: { country: null }
+                data: { country: undefined }
             });
         }
     }
