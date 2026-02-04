@@ -1,6 +1,159 @@
 # Labor Landmarks: Project Handoff & Roadmap
 
-This document serves as the source of truth for the Labor Landmarks full-stack transition. It outlines the current state, technical decisions, and a phased development roadmap.
+---
+
+## 🚨🚨🚨 STOP AND READ THIS FIRST 🚨🚨🚨
+
+> **Every AI session MUST read this section before doing ANYTHING.**  
+> **This project has TWO completely separate environments. They do NOT sync automatically.**
+
+---
+
+## THE TWO WORLDS (MEMORIZE THIS)
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║                         LOCAL DEV                                 ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Frontend URL:  http://localhost:5173                            ║
+║  API URL:       http://localhost:3001                            ║
+║  Database:      /prisma/dev.db (on YOUR Mac)                     ║
+║  Admin Login:   NOT REQUIRED (auto-bypassed on localhost)        ║
+║  Purpose:       Development, testing, data preparation           ║
+║  Safe to break: YES                                              ║
+╚══════════════════════════════════════════════════════════════════╝
+
+                    ┃  These are COMPLETELY SEPARATE  ┃
+                    ┃  Git push does NOT sync data    ┃
+                    ┃  Only Admin Import syncs data   ┃
+
+╔══════════════════════════════════════════════════════════════════╗
+║                        PRODUCTION                                 ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Frontend URL:  https://labor-landmarks.supersoul.top            ║
+║  API URL:       https://labor-landmarks.supersoul.top/api        ║
+║  Database:      /app/data/dev.db (Docker volume on Coolify)      ║
+║  Admin Login:   REQUIRED (ADMIN_PASSWORD env var)                ║
+║  Purpose:       Live public site for client                      ║
+║  Safe to break: NO - CLIENT DATA LIVES HERE                      ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## WHAT GIT PUSH DOES vs DOES NOT DO
+
+| ✅ Git Push DOES | ❌ Git Push DOES NOT |
+|------------------|----------------------|
+| Update React components | Change production database |
+| Update API endpoint code | Sync your local landmarks |
+| Update CSS/styling | Import new records |
+| Apply schema migrations | Update existing record data |
+| Update the seed file | Automatically run the seed |
+| Deploy new Docker image | Touch the Docker volume |
+
+**CRITICAL:** The production database lives in a Docker volume. Code deploys NEVER touch it (unless DB is empty, then seed runs once).
+
+---
+
+## THE ONLY WAY TO SYNC DATA
+
+```
+LOCAL ADMIN                              PRODUCTION ADMIN
+http://localhost:5173/admin              https://labor-landmarks.supersoul.top/admin
+
+   ┌─────────────────┐                      ┌─────────────────┐
+   │  Backup JSON    │ ──── file.json ────▶ │  Import JSON    │
+   └─────────────────┘                      └─────────────────┘
+```
+
+**Step-by-step:**
+1. LOCAL: Go to `http://localhost:5173/admin`
+2. LOCAL: Click **"Backup JSON"** → saves file to Downloads
+3. PRODUCTION: Go to `https://labor-landmarks.supersoul.top/admin`
+4. PRODUCTION: Login with admin password
+5. PRODUCTION: Click **"Backup JSON"** first (safety backup!)
+6. PRODUCTION: Click **"Import JSON"** → upload file from step 2
+7. PRODUCTION: Verify import stats match expectations
+
+---
+
+## ABSOLUTE RULES (NEVER BREAK THESE)
+
+| Rule | Why |
+|------|-----|
+| 🔴 NEVER assume git push syncs data | It doesn't. Only Admin Import syncs data. |
+| 🔴 NEVER run scripts against production | Scripts use local .env DATABASE_URL |
+| 🔴 NEVER manually edit .db files | Use Admin Dashboard or Prisma Studio |
+| 🔴 NEVER confuse localhost with production URL | Check the URL bar before every action |
+| 🟢 ALWAYS ask user which environment they mean | "Local or production?" |
+| 🟢 ALWAYS backup production before importing | Click Backup JSON first |
+| 🟢 ALWAYS verify record counts after sync | Compare local vs production counts |
+| 🟢 ALWAYS check if local server is running | `curl http://localhost:3001/api/landmarks` |
+
+---
+
+## COMMON PITFALLS (AI AGENTS READ THIS)
+
+### Pitfall 1: "Production data is wrong/missing"
+**WRONG:** Try to fix via code changes and git push  
+**RIGHT:** Sync via Admin Dashboard (Backup JSON → Import JSON)
+
+### Pitfall 2: "Metadata is null on production"  
+**CAUSE:** Old import code didn't save all fields  
+**FIX:** Import again from local (code is now fixed)
+
+### Pitfall 3: "Local shows data, production is empty"
+**CAUSE:** They're separate databases  
+**FIX:** Import local backup to production via Admin
+
+### Pitfall 4: "After deploy, production data disappeared"
+**CAUSE:** Docker volume wasn't persisted OR seed ran on empty DB  
+**CHECK:** Does production show 0 records or seed data (273)?  
+**FIX:** Import from your local backup
+
+### Pitfall 5: "I ran a fix script but production didn't change"
+**CAUSE:** Scripts run against LOCAL database only  
+**FIX:** After running script locally, sync to production via Admin
+
+---
+
+## QUICK DIAGNOSTIC COMMANDS
+
+```bash
+# Check LOCAL database record count
+curl -s http://localhost:3001/api/landmarks | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).length"
+
+# Check PRODUCTION database record count  
+curl -s https://labor-landmarks.supersoul.top/api/landmarks | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).length"
+
+# Check if local server is running
+curl -s http://localhost:3001/api/landmarks > /dev/null && echo "LOCAL: Running" || echo "LOCAL: Not running"
+
+# Compare a specific record (The Prospector example)
+curl -s http://localhost:3001/api/landmarks | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).find(x=>x.name?.includes('Prospector'))?.telephone"
+curl -s https://labor-landmarks.supersoul.top/api/landmarks | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).find(x=>x.name?.includes('Prospector'))?.telephone"
+```
+
+---
+
+## AI SESSION CHECKLIST (DO THIS EVERY TIME)
+
+Before doing ANY work, confirm:
+
+- [ ] Which environment is the user talking about? (local or production)
+- [ ] Is the local dev server running? (`npm run dev` in one terminal, server in another)
+- [ ] What is the current record count on local vs production?
+- [ ] Does production have the expected metadata? (email, telephone, sourceUrl)
+- [ ] Has the user backed up production recently?
+
+---
+
+## End of Critical Section
+
+**If you skipped the above, GO BACK AND READ IT.**
+
+---
 
 ## Project Vision
 To create a robust, searchable, and manageable inventory of American labor history, accessible via map and list views, with a secure admin backend for curators.
@@ -81,91 +234,6 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
     - **Option B**: **Nodemailer**. Use your own SMTP/Gmail. Zero cost, slightly more config.
 - [ ] **Authentication**: Secure the `/admin` route with password protection (Simple Auth or Clerk/Auth0).
 - [ ] **Image Upload**: Replace image URLs with actual file uploads (stored in filesystem volume).
-
----
-
-## 🚨 LOCAL vs PRODUCTION: STRICT GUARDRAILS 🚨
-
-> **THIS IS THE MOST IMPORTANT SECTION. READ IT CAREFULLY.**
-
-### The Golden Rules
-
-| Rule | Description |
-|------|-------------|
-| 🔴 **NEVER** | Push code expecting it to update production DATA |
-| 🔴 **NEVER** | Run utility scripts against production directly |
-| 🔴 **NEVER** | Manually edit `dev.db` files |
-| 🟢 **ALWAYS** | Use the Admin Dashboard buttons for data sync |
-| 🟢 **ALWAYS** | Test locally FIRST, then sync to production |
-| 🟢 **ALWAYS** | Backup production BEFORE importing |
-
-### Understanding the Two Worlds
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        LOCAL DEV                                │
-│  URL: http://localhost:5173                                     │
-│  Database: /prisma/dev.db (your machine)                        │
-│  Admin: No password required                                    │
-│  Purpose: Development, testing, data preparation                │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                    [Backup JSON] → file.json → [Import JSON]
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       PRODUCTION                                │
-│  URL: https://labor-landmarks.supersoul.top                     │
-│  Database: /app/data/dev.db (Docker volume on server)           │
-│  Admin: Password required (ADMIN_PASSWORD env var)              │
-│  Purpose: Live public site                                      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### What Git Push Does vs Doesn't Do
-
-| Git Push DOES | Git Push DOES NOT |
-|---------------|-------------------|
-| ✅ Update React components | ❌ Change production database |
-| ✅ Update API code | ❌ Sync your local landmarks |
-| ✅ Update styling/CSS | ❌ Import new records |
-| ✅ Apply schema migrations | ❌ Update existing record metadata |
-| ✅ Update static files | ❌ Delete or modify any data |
-
-### Data Sync Workflow (THE ONLY WAY)
-
-#### Step-by-Step: Sync Local Data to Production
-
-```
-1. LOCAL:  Make your changes (add landmarks, run fix scripts, etc.)
-2. LOCAL:  Verify everything looks correct in browser
-3. LOCAL:  Go to http://localhost:5173/admin
-4. LOCAL:  Click "Backup JSON" → saves file to your Downloads
-5. PROD:   Go to https://labor-landmarks.supersoul.top/admin  
-6. PROD:   Login with admin password
-7. PROD:   Click "Backup JSON" first (safety backup!)
-8. PROD:   Click "Import JSON" → select the file from step 4
-9. PROD:   Verify the import stats (added/updated/skipped)
-```
-
-#### ⚠️ If Import Creates Duplicates
-
-This can happen if records don't have `sourceUrl` for matching. Fix:
-
-```
-1. PROD:   Click "Reset DB" (deletes ALL data)
-2. PROD:   Click "Import JSON" → upload your local backup
-3. PROD:   Verify record count matches local
-```
-
-### Quick Reference: Which Environment Am I In?
-
-| Check | Local Dev | Production |
-|-------|-----------|------------|
-| URL bar | `localhost:5173` | `labor-landmarks.supersoul.top` |
-| Admin login | Skipped automatically | Password required |
-| Database location | Your computer | Docker volume on server |
-| Safe to experiment? | ✅ YES | ❌ NO - be careful |
 
 ---
 
