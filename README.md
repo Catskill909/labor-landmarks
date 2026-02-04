@@ -41,7 +41,23 @@ This project is fully containerized and ready for high-reliability deployment on
 - **Auto-Migration**: The container automatically applies database schema updates on startup.
 - **Auto-Seeding Safety**: Built-in protection to prevent production data overwrite during deployments.
 
-## 💻 Local Development
+## � Local vs Production (IMPORTANT!)
+
+| | Local Dev | Production |
+|---|-----------|------------|
+| **URL** | `localhost:5173` | `labor-landmarks.supersoul.top` |
+| **Database** | Your machine | Docker volume on server |
+| **Admin Auth** | Skipped | Password required |
+
+### Syncing Data (The ONLY way)
+```
+LOCAL:  Admin → "Backup JSON" → downloads file
+PROD:   Admin → "Import JSON" → upload that file
+```
+
+**⚠️ Git push updates CODE only, never DATA. See [HANDOFF.md](HANDOFF.md) for full details.**
+
+## �💻 Local Development
 
 1. **Install Dependencies**
    ```bash

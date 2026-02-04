@@ -84,40 +84,117 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
 
 ---
 
-## Deployment & Data Strategy (Crucial)
+## 🚨 LOCAL vs PRODUCTION: STRICT GUARDRAILS 🚨
 
-To maintain a healthy production environment, you must understand the distinction between **Code** and **Data**:
+> **THIS IS THE MOST IMPORTANT SECTION. READ IT CAREFULLY.**
 
-### 1. The Separation of Church and State
+### The Golden Rules
+
+| Rule | Description |
+|------|-------------|
+| 🔴 **NEVER** | Push code expecting it to update production DATA |
+| 🔴 **NEVER** | Run utility scripts against production directly |
+| 🔴 **NEVER** | Manually edit `dev.db` files |
+| 🟢 **ALWAYS** | Use the Admin Dashboard buttons for data sync |
+| 🟢 **ALWAYS** | Test locally FIRST, then sync to production |
+| 🟢 **ALWAYS** | Backup production BEFORE importing |
+
+### Understanding the Two Worlds
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        LOCAL DEV                                │
+│  URL: http://localhost:5173                                     │
+│  Database: /prisma/dev.db (your machine)                        │
+│  Admin: No password required                                    │
+│  Purpose: Development, testing, data preparation                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                    [Backup JSON] → file.json → [Import JSON]
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       PRODUCTION                                │
+│  URL: https://labor-landmarks.supersoul.top                     │
+│  Database: /app/data/dev.db (Docker volume on server)           │
+│  Admin: Password required (ADMIN_PASSWORD env var)              │
+│  Purpose: Live public site                                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### What Git Push Does vs Doesn't Do
+
+| Git Push DOES | Git Push DOES NOT |
+|---------------|-------------------|
+| ✅ Update React components | ❌ Change production database |
+| ✅ Update API code | ❌ Sync your local landmarks |
+| ✅ Update styling/CSS | ❌ Import new records |
+| ✅ Apply schema migrations | ❌ Update existing record metadata |
+| ✅ Update static files | ❌ Delete or modify any data |
+
+### Data Sync Workflow (THE ONLY WAY)
+
+#### Step-by-Step: Sync Local Data to Production
+
+```
+1. LOCAL:  Make your changes (add landmarks, run fix scripts, etc.)
+2. LOCAL:  Verify everything looks correct in browser
+3. LOCAL:  Go to http://localhost:5173/admin
+4. LOCAL:  Click "Backup JSON" → saves file to your Downloads
+5. PROD:   Go to https://labor-landmarks.supersoul.top/admin  
+6. PROD:   Login with admin password
+7. PROD:   Click "Backup JSON" first (safety backup!)
+8. PROD:   Click "Import JSON" → select the file from step 4
+9. PROD:   Verify the import stats (added/updated/skipped)
+```
+
+#### ⚠️ If Import Creates Duplicates
+
+This can happen if records don't have `sourceUrl` for matching. Fix:
+
+```
+1. PROD:   Click "Reset DB" (deletes ALL data)
+2. PROD:   Click "Import JSON" → upload your local backup
+3. PROD:   Verify record count matches local
+```
+
+### Quick Reference: Which Environment Am I In?
+
+| Check | Local Dev | Production |
+|-------|-----------|------------|
+| URL bar | `localhost:5173` | `labor-landmarks.supersoul.top` |
+| Admin login | Skipped automatically | Password required |
+| Database location | Your computer | Docker volume on server |
+| Safe to experiment? | ✅ YES | ❌ NO - be careful |
+
+---
+
+## Deployment & Data Strategy (Technical Details)
+
+### The Separation of CODE and DATA
 -   **CODE (Git/Coolify)**: When you push to GitHub, Coolify rebuilds your app. This updates the logic (React components, API endpoints, styling).
 -   **DATA (SQLite)**: The database file (`dev.db`) sits in a "Volume" on the server. **It is NOT overwritten by code deployments.**
     -   *Why?* If we replaced the DB every time you pushed code, you would delete every user submission and edit made on the production site.
 
-### 2. The "Safe Sync" Workflow
-Since you cannot just "push your local DB" to production, we use the **Import/Restore** feature to keep things in sync.
+### Smart Merge Logic (How Import Works)
 
-#### Scenario A: First Deployment (Initialization)
-1.  **Local**: Export your full dataset using the **"Backup JSON"** button.
-2.  **Prod**: Log into your fresh production site.
-3.  **Prod**: Use the **"Import JSON"** button to populate the empty database.
+When you click "Import JSON", the system does this for each record:
 
-#### Scenario B: Ongoing Updates
-You add 50 new landmarks locally (via scraping or manual entry) and want them on Prod.
-1.  **Local**: Export **"Backup JSON"**.
-2.  **Prod**: **"Import JSON"**.
-    -   The system uses **"Smart Merge"**:
-        -   It finds scraping records by `sourceUrl` and **Updates** them.
-        -   It finds manual records by `Name + Location` and **Skips** duplicates.
-        -   It **Adds** completely new records.
-    -   *Result*: Your Production user edits remain safe, and your new local data is added seamlessly.
-#### Scenario C: Bulk Data Correction (The current fix)
-If you run a script locally (like `fix_international_data.ts`) to fix hundreds of errors (e.g., changing "USA" to "United Kingdom"):
-1.  **Verify Local**: Refresh your local browser to ensure the map looks correct.
-2.  **Export Local**: Run `bash download_backup.sh` (or use the Admin Dashboard) to get a **clean** JSON file.
-3.  **Push Code**: Commit and push your `schema.prisma` and UI changes to GitHub/Coolify.
-4.  **Import to Prod**: Open your Production Admin Dashboard and **Import** that new clean JSON file. The system will update the existing records in the production volume with the new, corrected metadata.
+```
+IF record has sourceUrl:
+    → Find existing record by sourceUrl
+    → If found: UPDATE all fields
+    → If not found: CREATE new record
+    
+IF record has NO sourceUrl (manual entry):
+    → Find existing by Name + Coordinates (±11 meters)
+    → If found: SKIP (don't create duplicate)
+    → If not found: CREATE new record
+```
 
-### 3. Critical Technical Configs (For Coolify/Docker)
+**Important:** Manual records (no sourceUrl) can only be ADDED, not UPDATED via import. Edit them directly in the Admin Dashboard.
+
+### Critical Technical Configs (For Coolify/Docker)
 
 *   **Port 3001**: The application uses **Port 3001** consistently across local development and Docker. The `Dockerfile` sets `EXPOSE 3001` and `ENV PORT=3001`, matching `docker-compose.yml`. Ensure your deployment platform (Coolify, Railway, etc.) maps to port 3001.
 *   **Admin API Security**: All `/api/admin/*` endpoints are protected with Bearer token authentication. The frontend sends the admin password as `Authorization: Bearer <password>` header.
