@@ -213,117 +213,122 @@ app.get('/api/admin/backup', adminAuth, async (_req, res) => {
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// POST import landmarks (Smart Merge)
+// POST import landmarks (Smart Merge with Transaction)
 app.post('/api/admin/import', adminAuth, async (req, res) => {
     const landmarks = req.body; // Expecting JSON array
     if (!Array.isArray(landmarks)) {
         return res.status(400).json({ error: 'Invalid format. Expected JSON array.' });
     }
 
-    let addedCount = 0;
-    let updatedCount = 0;
-    let skippedCount = 0;
-
     try {
-        for (const item of landmarks) {
-            // 1. Scraped Records (sourceUrl based upsert)
-            if (item.sourceUrl) {
-                const existing = await prisma.landmark.findUnique({
-                    where: { sourceUrl: item.sourceUrl }
-                });
+        // Wrap entire import in a transaction for atomicity
+        const result = await prisma.$transaction(async (tx) => {
+            let addedCount = 0;
+            let updatedCount = 0;
+            let skippedCount = 0;
 
-                if (existing) {
-                    // Update existing
-                    await prisma.landmark.update({
-                        where: { id: existing.id },
-                        data: {
-                            name: item.name,
-                            city: item.city,
-                            state: item.state,
-                            country: item.country || 'USA',
-                            category: item.category,
-                            description: item.description,
-                            address: item.address,
-                            lat: Number(item.lat),
-                            lng: Number(item.lng),
-                            email: item.email,
-                            website: item.website,
-                            telephone: item.telephone,
-                            isPublished: item.isPublished
-                        }
+            for (const item of landmarks) {
+                // 1. Scraped Records (sourceUrl based upsert)
+                if (item.sourceUrl) {
+                    const existing = await tx.landmark.findUnique({
+                        where: { sourceUrl: item.sourceUrl }
                     });
-                    updatedCount++;
-                } else {
-                    // Create new
-                    await prisma.landmark.create({
-                        data: {
-                            name: item.name,
-                            city: item.city,
-                            state: item.state,
-                            country: item.country || 'USA',
-                            category: item.category,
-                            description: item.description,
-                            address: item.address,
-                            lat: Number(item.lat),
-                            lng: Number(item.lng),
-                            email: item.email,
-                            website: item.website,
-                            telephone: item.telephone,
-                            sourceUrl: item.sourceUrl,
-                            isPublished: item.isPublished
-                        } as any
-                    });
-                    addedCount++;
-                }
-            }
-            // 2. Manual Records (No sourceUrl - duplicate check by name+location)
-            else {
-                // Precision-safe coordinate matching (round to 4 decimal places ~11 meters)
-                const lat = Number(Number(item.lat).toFixed(4));
-                const lng = Number(Number(item.lng).toFixed(4));
 
-                const existingManual = await prisma.landmark.findFirst({
-                    where: {
-                        name: item.name,
-                        lat: {
-                            gte: lat - 0.0001,
-                            lte: lat + 0.0001
-                        },
-                        lng: {
-                            gte: lng - 0.0001,
-                            lte: lng + 0.0001
-                        }
+                    if (existing) {
+                        // Update existing
+                        await tx.landmark.update({
+                            where: { id: existing.id },
+                            data: {
+                                name: item.name,
+                                city: item.city,
+                                state: item.state,
+                                country: item.country || 'USA',
+                                category: item.category,
+                                description: item.description,
+                                address: item.address,
+                                lat: Number(item.lat),
+                                lng: Number(item.lng),
+                                email: item.email,
+                                website: item.website,
+                                telephone: item.telephone,
+                                isPublished: item.isPublished
+                            }
+                        });
+                        updatedCount++;
+                    } else {
+                        // Create new
+                        await tx.landmark.create({
+                            data: {
+                                name: item.name,
+                                city: item.city,
+                                state: item.state,
+                                country: item.country || 'USA',
+                                category: item.category,
+                                description: item.description,
+                                address: item.address,
+                                lat: Number(item.lat),
+                                lng: Number(item.lng),
+                                email: item.email,
+                                website: item.website,
+                                telephone: item.telephone,
+                                sourceUrl: item.sourceUrl,
+                                isPublished: item.isPublished
+                            } as any
+                        });
+                        addedCount++;
                     }
-                });
+                }
+                // 2. Manual Records (No sourceUrl - duplicate check by name+location)
+                else {
+                    // Precision-safe coordinate matching (round to 4 decimal places ~11 meters)
+                    const lat = Number(Number(item.lat).toFixed(4));
+                    const lng = Number(Number(item.lng).toFixed(4));
 
-                if (!existingManual) {
-                    await prisma.landmark.create({
-                        data: {
+                    const existingManual = await tx.landmark.findFirst({
+                        where: {
                             name: item.name,
-                            city: item.city,
-                            state: item.state,
-                            country: item.country || 'USA',
-                            category: item.category,
-                            description: item.description,
-                            address: item.address,
-                            lat: Number(item.lat),
-                            lng: Number(item.lng),
-                            email: item.email,
-                            website: item.website,
-                            telephone: item.telephone,
-                            isPublished: item.isPublished
-                        } as any
+                            lat: {
+                                gte: lat - 0.0001,
+                                lte: lat + 0.0001
+                            },
+                            lng: {
+                                gte: lng - 0.0001,
+                                lte: lng + 0.0001
+                            }
+                        }
                     });
-                    addedCount++;
-                } else {
-                    skippedCount++;
+
+                    if (!existingManual) {
+                        await tx.landmark.create({
+                            data: {
+                                name: item.name,
+                                city: item.city,
+                                state: item.state,
+                                country: item.country || 'USA',
+                                category: item.category,
+                                description: item.description,
+                                address: item.address,
+                                lat: Number(item.lat),
+                                lng: Number(item.lng),
+                                email: item.email,
+                                website: item.website,
+                                telephone: item.telephone,
+                                isPublished: item.isPublished
+                            } as any
+                        });
+                        addedCount++;
+                    } else {
+                        skippedCount++;
+                    }
                 }
             }
-        }
+
+            return { added: addedCount, updated: updatedCount, skipped: skippedCount };
+        });
 
         res.json({
             message: 'Import completed',
-            stats: { added: addedCount, updated: updatedCount, skipped: skippedCount }
+            stats: result
         });
 
     } catch (error) {
