@@ -208,6 +208,28 @@ const AdminDashboard: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setAlertState({
+                                isOpen: true,
+                                title: 'Reset Database?',
+                                message: 'Warning: This will delete ALL 531+ landmarks. You should only do this if you have a duplicate data issue. You must re-import your JSON backup immediately after.',
+                                type: 'confirm',
+                                onConfirm: async () => {
+                                    try {
+                                        await fetch('/api/admin/clear', { method: 'DELETE' });
+                                        fetchAdminLandmarks();
+                                        setAlertState(prev => ({ ...prev, isOpen: false }));
+                                    } catch (e) {
+                                        console.error(e);
+                                    }
+                                }
+                            } as any)}
+                            className="flex items-center gap-2 bg-red-900/30 hover:bg-red-900/50 text-red-500 px-4 py-2.5 rounded-xl font-bold transition-all border border-red-500/20 hover:scale-105 active:scale-95"
+                            title="Emergency Reset"
+                        >
+                            <Trash2 size={18} />
+                            Reset DB
+                        </button>
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -403,6 +425,9 @@ const AdminDashboard: React.FC = () => {
                 title={alertState.title}
                 message={alertState.message}
                 type={alertState.type}
+                onConfirm={(alertState as any).onConfirm}
+                confirmText="Yes, Reset"
+                isDestructive={true}
             />
         </div>
     );

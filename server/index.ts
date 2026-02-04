@@ -65,6 +65,17 @@ app.get('/api/admin/landmarks', async (_req, res) => {
     }
 });
 
+// DELETE all landmarks (Emergency/Reset)
+app.delete('/api/admin/clear', async (req, res) => {
+    try {
+        await prisma.landmark.deleteMany();
+        res.json({ message: 'All landmarks deleted' });
+    } catch (error) {
+        console.error('Clear landmarks error:', error);
+        res.status(500).json({ error: 'Failed to clear landmarks' });
+    }
+});
+
 // GET single landmark
 app.get('/api/landmarks/:id', async (req, res) => {
     const { id } = req.params;
@@ -248,13 +259,21 @@ app.post('/api/admin/import', async (req, res) => {
             }
             // 2. Manual Records (No sourceUrl - duplicate check by name+location)
             else {
-                // Fuzzy check for existing
+                // Precision-safe coordinate matching (round to 4 decimal places ~11 meters)
+                const lat = Number(Number(item.lat).toFixed(4));
+                const lng = Number(Number(item.lng).toFixed(4));
+
                 const existingManual = await prisma.landmark.findFirst({
                     where: {
                         name: item.name,
-                        // Simple float comparison might be tricky, but exact match for now reduces risk
-                        lat: Number(item.lat),
-                        lng: Number(item.lng)
+                        lat: {
+                            gte: lat - 0.0001,
+                            lte: lat + 0.0001
+                        },
+                        lng: {
+                            gte: lng - 0.0001,
+                            lte: lng + 0.0001
+                        }
                     }
                 });
 
