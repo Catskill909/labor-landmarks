@@ -123,15 +123,11 @@ If you run a script locally (like `fix_international_data.ts`) to fix hundreds o
 *   **Database Migrations**:
     *   **Rule**: If you change `prisma/schema.prisma` (e.g., add a column), you **MUST** run `npx prisma migrate dev` locally.
     *   **Why?**: This generates the SQL file in `prisma/migrations/`. The production server uses this file to update the live database.
-### 4. CRITICAL: Data Persistence Safety
-> [!IMPORTANT]
-> A critical update was made to prevent production data overwrite.
-
--   **Auto-Seeding Disabled**: The `Dockerfile` NO LONGER runs `npx tsx prisma/seed.ts` on startup. This prevents the dynamic production database from being reset to the static `landmarks.json` file on every deployment.
--   **Safe Seed Script**: The `prisma/seed.ts` script now checks if the database is empty before running.
-    -   **If DB has data**: It creates a log entry and SKIPS seeding.
-    -   **Force Seeding**: To overwrite the database (e.g., during initial setup or reset), you must specifically set the environment variable: `FORCE_SEED=true`.
-    -   **Command**: `FORCE_SEED=true npx tsx prisma/seed.ts`
+-   **Smart Seeding RE-ENABLED**: The `Dockerfile` now runs `npx tsx prisma/seed.ts` on every startup.
+-   **Safe Seed Logic**: The script is now "Smart":
+    -   **Empty DB**: If the map has 0 markers, it automatically loads from `landmarks_imported.json` (the full 274 record set).
+    -   **Non-Empty DB**: If the map already has data (your edits, new submissions), it changes **NOTHING**.
+-   **Security**: This ensures you never see a "blank map" in production again, while still protecting your manual edits.
 
 ---
 
