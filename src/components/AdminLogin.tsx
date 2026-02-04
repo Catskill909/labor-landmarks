@@ -29,6 +29,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
 
             if (response.ok && data.success) {
                 sessionStorage.setItem('isAdminAuthenticated', 'true');
+                sessionStorage.setItem('adminToken', password); // Store for API auth
                 onLoginSuccess();
             } else {
                 setError(data.error || 'Invalid password');

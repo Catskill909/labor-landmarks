@@ -15,7 +15,7 @@ export interface Landmark {
     email?: string;
     website?: string;
     telephone?: string;
-    country: string;
+    country?: string;        // Optional to match Prisma schema
     sourceUrl?: string;
     isPublished?: boolean;
 }

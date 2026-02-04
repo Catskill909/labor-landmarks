@@ -5,6 +5,18 @@ import type { Landmark } from './LandmarkCard';
 import LandmarkModal from './LandmarkModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
 
+// Helper for authenticated admin API calls
+const adminFetch = (url: string, options: RequestInit = {}) => {
+    const token = sessionStorage.getItem('adminToken');
+    const headers: HeadersInit = {
+        ...options.headers,
+    };
+    if (token) {
+        (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    }
+    return fetch(url, { ...options, headers });
+};
+
 // Admin Dashboard for managing landmarks
 const AdminDashboard: React.FC = () => {
     const [landmarks, setLandmarks] = useState<Landmark[]>([]);
@@ -29,7 +41,7 @@ const AdminDashboard: React.FC = () => {
     // Fetch Admin Data (All records)
     const fetchAdminLandmarks = async () => {
         try {
-            const response = await fetch('/api/admin/landmarks');
+            const response = await adminFetch('/api/admin/landmarks');
             if (response.ok) {
                 const data = await response.json();
                 setLandmarks(data);
@@ -131,7 +143,7 @@ const AdminDashboard: React.FC = () => {
         reader.onload = async (e) => {
             try {
                 const json = JSON.parse(e.target?.result as string);
-                const response = await fetch('/api/admin/import', {
+                const response = await adminFetch('/api/admin/import', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(json)
@@ -216,7 +228,7 @@ const AdminDashboard: React.FC = () => {
                                 type: 'confirm',
                                 onConfirm: async () => {
                                     try {
-                                        await fetch('/api/admin/clear', { method: 'DELETE' });
+                                        await adminFetch('/api/admin/clear', { method: 'DELETE' });
                                         fetchAdminLandmarks();
                                         setAlertState(prev => ({ ...prev, isOpen: false }));
                                     } catch (e) {
@@ -246,15 +258,37 @@ const AdminDashboard: React.FC = () => {
                             {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
                             Import JSON
                         </button>
-                        <a
-                            href="/api/admin/backup"
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const response = await adminFetch('/api/admin/backup');
+                                    if (!response.ok) throw new Error('Backup failed');
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    const date = new Date().toISOString().split('T')[0];
+                                    a.download = `landmarks_backup_${date}.json`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    a.remove();
+                                } catch (e) {
+                                    console.error('Backup error:', e);
+                                    setAlertState({
+                                        isOpen: true,
+                                        title: 'Backup Failed',
+                                        message: 'Failed to download backup. Please try again.',
+                                        type: 'error'
+                                    });
+                                }
+                            }}
                             className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-gray-300 px-6 py-2.5 rounded-xl font-bold transition-all border border-white/5 hover:scale-105 active:scale-95 no-underline"
                             title="Download JSON Backup"
-                            download
                         >
                             <Download size={18} />
                             Backup JSON
-                        </a>
+                        </button>
                         <button
                             onClick={handleAdd}
                             className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95"

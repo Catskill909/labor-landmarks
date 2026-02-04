@@ -119,7 +119,8 @@ If you run a script locally (like `fix_international_data.ts`) to fix hundreds o
 
 ### 3. Critical Technical Configs (For Coolify/Docker)
 
-*   **Port 3000**: The `Dockerfile` is strictly set to **Port 3000** (checking `EXPOSE 3000` and `ENV PORT=3000`). This matches the default healthcheck settings of most platforms (Coolify, Railway, etc.). **Do not change this** unless you update the healthcheck URL in your deployment settings.
+*   **Port 3001**: The application uses **Port 3001** consistently across local development and Docker. The `Dockerfile` sets `EXPOSE 3001` and `ENV PORT=3001`, matching `docker-compose.yml`. Ensure your deployment platform (Coolify, Railway, etc.) maps to port 3001.
+*   **Admin API Security**: All `/api/admin/*` endpoints are protected with Bearer token authentication. The frontend sends the admin password as `Authorization: Bearer <password>` header.
 *   **Database Migrations**:
     *   **Rule**: If you change `prisma/schema.prisma` (e.g., add a column), you **MUST** run `npx prisma migrate dev` locally.
     *   **Why?**: This generates the SQL file in `prisma/migrations/`. The production server uses this file to update the live database.

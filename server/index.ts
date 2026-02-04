@@ -17,8 +17,27 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Admin Authentication Middleware
+// Verifies the admin password from Authorization header (Bearer token)
+// Skips auth if no ADMIN_PASSWORD is configured (local dev convenience)
+const adminAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // If no password configured, allow access (local dev / initial setup)
+    if (!adminPassword) {
+        return next();
+    }
+
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader === `Bearer ${adminPassword}`) {
+        next();
+    } else {
+        res.status(401).json({ error: 'Unauthorized - Invalid or missing admin credentials' });
+    }
+};
+
 // API Endpoints
-// Password Verification for Admin (Production only)
+// Password Verification for Admin (Production only) - NOT protected (it's the login endpoint)
 app.post('/api/admin/verify-password', (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD;
@@ -52,7 +71,7 @@ app.get('/api/landmarks', async (_req, res) => {
 });
 
 // GET all landmarks (Admin API - All records)
-app.get('/api/admin/landmarks', async (_req, res) => {
+app.get('/api/admin/landmarks', adminAuth, async (_req, res) => {
     res.set('Cache-Control', 'no-store');
     try {
         const landmarks = await prisma.landmark.findMany({
@@ -66,7 +85,7 @@ app.get('/api/admin/landmarks', async (_req, res) => {
 });
 
 // DELETE all landmarks (Emergency/Reset)
-app.delete('/api/admin/clear', async (req, res) => {
+app.delete('/api/admin/clear', adminAuth, async (req, res) => {
     try {
         await prisma.landmark.deleteMany();
         res.json({ message: 'All landmarks deleted' });
@@ -174,7 +193,7 @@ app.delete('/api/landmarks/:id', async (req, res) => {
 });
 
 // GET backup of all landmarks as JSON file
-app.get('/api/admin/backup', async (_req, res) => {
+app.get('/api/admin/backup', adminAuth, async (_req, res) => {
     try {
         const landmarks = await prisma.landmark.findMany({
             orderBy: { id: 'asc' }
@@ -195,7 +214,7 @@ app.get('/api/admin/backup', async (_req, res) => {
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // POST import landmarks (Smart Merge)
-app.post('/api/admin/import', async (req, res) => {
+app.post('/api/admin/import', adminAuth, async (req, res) => {
     const landmarks = req.body; // Expecting JSON array
     if (!Array.isArray(landmarks)) {
         return res.status(400).json({ error: 'Invalid format. Expected JSON array.' });

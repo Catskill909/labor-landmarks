@@ -9,7 +9,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      # DATABASE_URL is set in Dockerfile to /app/data/labor.db
+      # DATABASE_URL is set in Dockerfile to /app/data/dev.db
     volumes:
       # Map the named volume to the data directory
       - labor_data:/app/data
