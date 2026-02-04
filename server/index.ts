@@ -222,7 +222,7 @@ app.post('/api/admin/import', adminAuth, async (req, res) => {
 
     try {
         // Wrap entire import in a transaction for atomicity
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: typeof prisma) => {
             let addedCount = 0;
             let updatedCount = 0;
             let skippedCount = 0;
