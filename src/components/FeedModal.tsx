@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Copy, Check, Rss } from 'lucide-react';
 
@@ -71,8 +71,8 @@ export default function FeedModal({ isOpen, onClose }: FeedModalProps) {
                                 <button
                                     onClick={handleCopy}
                                     className={`px-4 py-2 rounded-xl font-bold border transition-all duration-200 flex items-center gap-2 min-w-[100px] justify-center ${copied
-                                            ? 'bg-green-500/20 text-green-500 border-green-500/30'
-                                            : 'bg-zinc-800 text-white hover:bg-zinc-700 border-white/5'
+                                        ? 'bg-green-500/20 text-green-500 border-green-500/30'
+                                        : 'bg-zinc-800 text-white hover:bg-zinc-700 border-white/5'
                                         }`}
                                 >
                                     {copied ? (
