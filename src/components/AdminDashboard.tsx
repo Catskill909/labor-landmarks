@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload, Rss } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Landmark } from './LandmarkCard';
 import LandmarkModal from './LandmarkModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
+import FeedModal from './FeedModal';
 
 // Helper for authenticated admin API calls
 const adminFetch = (url: string, options: RequestInit = {}) => {
@@ -26,6 +27,7 @@ const AdminDashboard: React.FC = () => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [selectedLandmark, setSelectedLandmark] = useState<Landmark | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isFeedModalOpen, setIsFeedModalOpen] = useState(false);
     const [filterStatus, setFilterStatus] = useState<'published' | 'draft'>('published');
 
     // Modal States
@@ -290,6 +292,14 @@ const AdminDashboard: React.FC = () => {
                             Backup JSON
                         </button>
                         <button
+                            onClick={() => setIsFeedModalOpen(true)}
+                            className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-gray-300 px-6 py-2.5 rounded-xl font-bold transition-all border border-white/5 hover:scale-105 active:scale-95"
+                            title="JSON Data Feed"
+                        >
+                            <Rss size={18} />
+                            Feed
+                        </button>
+                        <button
                             onClick={handleAdd}
                             className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95"
                         >
@@ -462,6 +472,11 @@ const AdminDashboard: React.FC = () => {
                 onConfirm={(alertState as any).onConfirm}
                 confirmText="Yes, Reset"
                 isDestructive={true}
+            />
+
+            <FeedModal
+                isOpen={isFeedModalOpen}
+                onClose={() => setIsFeedModalOpen(false)}
             />
         </div>
     );
