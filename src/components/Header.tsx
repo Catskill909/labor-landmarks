@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-red-500 transition-colors" size={18} />
                     <input
                         type="text"
-                        placeholder="Search by City or State..."
+                        placeholder="Search by Name, City or State..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-zinc-900/50 border border-white/10 rounded-xl py-2 pl-12 pr-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500/30 transition-all placeholder:text-gray-500"

@@ -43,7 +43,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     onClick={() => setViewMode('map')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${viewMode === 'map'
                         ? 'bg-red-600 text-white shadow-lg shadow-red-900/20'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        : 'text-white bg-white/5 hover:bg-white/10 ring-1 ring-white/10 hover:ring-white/20'
                         }`}
                 >
                     <Map size={16} />
@@ -53,7 +53,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     onClick={() => setViewMode('list')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${viewMode === 'list'
                         ? 'bg-red-600 text-white shadow-lg shadow-red-900/20'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        : 'text-white bg-white/5 hover:bg-white/10 ring-1 ring-white/10 hover:ring-white/20'
                         }`}
                 >
                     <List size={16} />

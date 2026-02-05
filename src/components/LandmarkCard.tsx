@@ -34,7 +34,7 @@ const LandmarkCard: React.FC<LandmarkCardProps> = ({ landmark, onClick }) => {
             exit={{ opacity: 0, scale: 0.9 }}
             whileHover={{ y: -5 }}
             onClick={onClick}
-            className="bg-zinc-900/40 border border-white/5 rounded-2xl p-5 hover:bg-zinc-800/60 transition-all duration-300 group cursor-pointer"
+            className="bg-zinc-900/40 border border-white/10 rounded-2xl p-5 hover:bg-zinc-800/60 hover:border-white/20 transition-all duration-300 group cursor-pointer"
         >
             <div className="flex justify-between items-start mb-4">
                 <div className="bg-zinc-800 p-2 rounded-xl group-hover:bg-red-600/20 transition-colors">
