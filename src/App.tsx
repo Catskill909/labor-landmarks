@@ -53,6 +53,20 @@ function App() {
     setIsModalOpen(true);
   };
 
+  const handleNext = () => {
+    if (!selectedLandmark) return;
+    const currentIndex = filteredLandmarks.findIndex(l => l.id === selectedLandmark.id);
+    const nextIndex = (currentIndex + 1) % filteredLandmarks.length;
+    setSelectedLandmark(filteredLandmarks[nextIndex]);
+  };
+
+  const handlePrevious = () => {
+    if (!selectedLandmark) return;
+    const currentIndex = filteredLandmarks.findIndex(l => l.id === selectedLandmark.id);
+    const prevIndex = (currentIndex - 1 + filteredLandmarks.length) % filteredLandmarks.length;
+    setSelectedLandmark(filteredLandmarks[prevIndex]);
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-white px-6">
@@ -110,6 +124,9 @@ function App() {
               landmark={selectedLandmark}
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
+              onNext={handleNext}
+              onPrevious={handlePrevious}
+              viewMode={viewMode}
             />
 
             <footer className="fixed bottom-0 left-0 right-0 glass px-6 py-3 flex items-center justify-between text-[10px] text-gray-500 z-40 border-t border-white/5">

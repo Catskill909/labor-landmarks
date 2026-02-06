@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, MapPin, Info, Navigation, ExternalLink, Phone, Mail, Globe } from 'lucide-react';
+import { X, MapPin, Info, Navigation, ExternalLink, Phone, Mail, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -22,9 +22,12 @@ interface DetailModalProps {
     landmark: Landmark | null;
     isOpen: boolean;
     onClose: () => void;
+    onNext?: () => void;
+    onPrevious?: () => void;
+    viewMode?: 'map' | 'list';
 }
 
-const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) => {
+const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, onNext, onPrevious, viewMode }) => {
     // Prevent scrolling when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -36,6 +39,24 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
             document.body.style.overflow = 'unset';
         };
     }, [isOpen]);
+
+    // Keyboard navigation
+    useEffect(() => {
+        if (!isOpen || viewMode !== 'list') return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight' && onNext) {
+                onNext();
+            } else if (e.key === 'ArrowLeft' && onPrevious) {
+                onPrevious();
+            } else if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, viewMode, onNext, onPrevious, onClose]);
 
     if (!landmark) return null;
 
@@ -52,146 +73,182 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose }) 
                         className="absolute inset-0 bg-black/80 backdrop-blur-md"
                     />
 
-                    {/* Modal Content */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto no-scrollbar glass rounded-3xl border border-white/10 shadow-2xl flex flex-col md:flex-row"
-                    >
-                        {/* Close Button */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-4 right-4 z-[10000] p-2 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/5"
-                        >
-                            <X size={20} />
-                        </button>
+                    {/* Navigation Buttons (List View Only) */}
+                    {viewMode === 'list' && (
+                        <>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onPrevious?.();
+                                }}
+                                className="absolute left-4 md:left-10 z-[10001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-red-600 transition-all border border-white/10 shadow-2xl hover:scale-110 active:scale-90 group"
+                                aria-label="Previous landmark"
+                            >
+                                <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onNext?.();
+                                }}
+                                className="absolute right-4 md:right-10 z-[10001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-red-600 transition-all border border-white/10 shadow-2xl hover:scale-110 active:scale-90 group"
+                                aria-label="Next landmark"
+                            >
+                                <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
+                            </button>
+                        </>
+                    )}
 
-                        {/* Left Side: Visual/Quick Info */}
-                        <div className="w-full md:w-5/12 p-8 bg-zinc-900/30 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
-                            <div>
-                                <div className="bg-red-600 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/20 mb-6 font-bold text-white">
-                                    <MapPin size={24} />
-                                </div>
-                                <h2 className="text-3xl font-black text-white leading-tight mb-4">
-                                    {landmark.name}
-                                </h2>
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    {landmark.category.split(',').map((cat) => (
-                                        <span key={cat.trim()} className="text-[10px] font-bold text-red-500 bg-red-500/5 border border-red-500/30 px-3 py-1 rounded-lg uppercase tracking-wider backdrop-blur-sm">
-                                            {cat.trim()}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
+                    {/* Modal Content - Wrapped in its own AnimatePresence for smooth transitions between landmarks */}
+                    <div className="w-full max-w-5xl relative z-[10000] px-4">
+                        <AnimatePresence mode="popLayout" initial={false}>
+                            <motion.div
+                                key={landmark.id}
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 1.02 }}
+                                transition={{
+                                    duration: 1.0,
+                                    ease: [0.4, 0, 0.2, 1] // Native-like smooth ease-in-out
+                                }}
+                                className="relative w-full max-h-[90vh] overflow-y-auto no-scrollbar glass rounded-3xl border border-white/10 shadow-2xl flex flex-col md:flex-row mx-auto"
+                            >
+                                {/* Close Button */}
+                                <button
+                                    onClick={onClose}
+                                    className="absolute top-4 right-4 z-[10000] p-2 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/5"
+                                >
+                                    <X size={20} />
+                                </button>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-gray-300">
-                                    <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                        <Navigation size={16} className="text-red-500" />
-                                    </div>
+                                {/* Left Side: Visual/Quick Info */}
+                                <div className="w-full md:w-5/12 p-8 bg-zinc-900/30 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
                                     <div>
-                                        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Location</p>
-                                        <p className="text-sm font-medium">
-                                            {[landmark.city, landmark.state, landmark.country].filter(Boolean).join(', ')}
-                                        </p>
+                                        <div className="bg-red-600 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/20 mb-6 font-bold text-white">
+                                            <MapPin size={24} />
+                                        </div>
+                                        <h2 className="text-3xl font-black text-white leading-tight mb-4">
+                                            {landmark.name}
+                                        </h2>
+                                        <div className="flex flex-wrap gap-2 mb-6">
+                                            {landmark.category.split(',').map((cat) => (
+                                                <span key={cat.trim()} className="text-[10px] font-bold text-red-500 bg-red-500/5 border border-red-500/30 px-3 py-1 rounded-lg uppercase tracking-wider backdrop-blur-sm">
+                                                    {cat.trim()}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 text-gray-300">
+                                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                                <Navigation size={16} className="text-red-500" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Location</p>
+                                                <p className="text-sm font-medium">
+                                                    {[landmark.city, landmark.state, landmark.country].filter(Boolean).join(', ')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {landmark.telephone && (
+                                            <div className="flex items-center gap-3 text-gray-300">
+                                                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                                    <Phone size={16} className="text-red-500" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Telephone</p>
+                                                    <p className="text-sm font-medium">{landmark.telephone}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {landmark.email && (
+                                            <div className="flex items-center gap-3 text-gray-300">
+                                                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                                    <Mail size={16} className="text-red-500" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Email</p>
+                                                    <a href={`mailto:${landmark.email}`} className="text-sm font-medium hover:text-red-400 transition-colors">{landmark.email}</a>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {landmark.website && (
+                                            <div className="flex items-center gap-3 text-gray-300">
+                                                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                                    <Globe size={16} className="text-red-500" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Website</p>
+                                                    <a href={landmark.website.startsWith('http') ? landmark.website : `https://${landmark.website}`} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-red-400 transition-colors break-all">
+                                                        {landmark.website.replace(/^https?:\/\//, '')}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {landmark.telephone && (
-                                    <div className="flex items-center gap-3 text-gray-300">
-                                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                            <Phone size={16} className="text-red-500" />
+                                {/* Right Side: Details & Map */}
+                                <div className="w-full md:w-7/12 flex flex-col">
+                                    <div className="p-8 flex-1">
+                                        <div className="flex items-center gap-2 text-red-500 mb-6 font-bold text-sm tracking-widest uppercase">
+                                            <Info size={18} />
+                                            Historical Significance
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Telephone</p>
-                                            <p className="text-sm font-medium">{landmark.telephone}</p>
+                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                                            {landmark.description}
+                                        </p>
+
+                                        {/* Mini Map */}
+                                        <div className="bg-white/5 rounded-2xl overflow-hidden border border-white/5 mb-8">
+                                            <div className="h-48 w-full z-10 relative">
+                                                <MapContainer
+                                                    key={landmark.id}
+                                                    center={[landmark.lat, landmark.lng]}
+                                                    zoom={13}
+                                                    style={{ height: '100%', width: '100%' }}
+                                                    zoomControl={false}
+                                                    scrollWheelZoom={false}
+                                                    dragging={false}
+                                                    doubleClickZoom={false}
+                                                    attributionControl={false}
+                                                >
+                                                    <TileLayer
+                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                    />
+                                                    <Marker position={[landmark.lat, landmark.lng]} />
+                                                </MapContainer>
+                                            </div>
+                                            <div className="p-4 bg-zinc-900/50">
+                                                <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-1 opacity-50">Street Address</h4>
+                                                <p className="text-gray-300 text-sm font-medium">{landmark.address}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                )}
 
-                                {landmark.email && (
-                                    <div className="flex items-center gap-3 text-gray-300">
-                                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                            <Mail size={16} className="text-red-500" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Email</p>
-                                            <a href={`mailto:${landmark.email}`} className="text-sm font-medium hover:text-red-400 transition-colors">{landmark.email}</a>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {landmark.website && (
-                                    <div className="flex items-center gap-3 text-gray-300">
-                                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                            <Globe size={16} className="text-red-500" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Website</p>
-                                            <a href={landmark.website.startsWith('http') ? landmark.website : `https://${landmark.website}`} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-red-400 transition-colors break-all">
-                                                {landmark.website.replace(/^https?:\/\//, '')}
+                                    {landmark.website && (
+                                        <div className="flex flex-wrap gap-4 p-8 pt-0 mt-auto">
+                                            <a
+                                                href={landmark.website.startsWith('http') ? landmark.website : `https://${landmark.website}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-5 text-sm rounded-xl transition-all shadow-lg shadow-red-900/20 active:scale-95"
+                                            >
+                                                <ExternalLink size={14} />
+                                                Official Site
                                             </a>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                                    )}
 
-                        {/* Right Side: Details & Map */}
-                        <div className="w-full md:w-7/12 flex flex-col">
-                            <div className="p-8 flex-1">
-                                <div className="flex items-center gap-2 text-red-500 mb-6 font-bold text-sm tracking-widest uppercase">
-                                    <Info size={18} />
-                                    Historical Significance
+
                                 </div>
-                                <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                                    {landmark.description}
-                                </p>
-
-                                {/* Mini Map */}
-                                <div className="bg-white/5 rounded-2xl overflow-hidden border border-white/5 mb-8">
-                                    <div className="h-48 w-full z-10 relative">
-                                        <MapContainer
-                                            center={[landmark.lat, landmark.lng]}
-                                            zoom={13}
-                                            style={{ height: '100%', width: '100%' }}
-                                            zoomControl={false}
-                                            scrollWheelZoom={false}
-                                            dragging={false}
-                                            doubleClickZoom={false}
-                                            attributionControl={false}
-                                        >
-                                            <TileLayer
-                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                            />
-                                            <Marker position={[landmark.lat, landmark.lng]} />
-                                        </MapContainer>
-                                    </div>
-                                    <div className="p-4 bg-zinc-900/50">
-                                        <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-1 opacity-50">Street Address</h4>
-                                        <p className="text-gray-300 text-sm font-medium">{landmark.address}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {landmark.website && (
-                                <div className="flex flex-wrap gap-4 p-8 pt-0 mt-auto">
-                                    <a
-                                        href={landmark.website.startsWith('http') ? landmark.website : `https://${landmark.website}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-5 text-sm rounded-xl transition-all shadow-lg shadow-red-900/20 active:scale-95"
-                                    >
-                                        <ExternalLink size={14} />
-                                        Official Site
-                                    </a>
-                                </div>
-                            )}
-
-
-                        </div>
-                    </motion.div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
                 </div>
             )}
         </AnimatePresence>
