@@ -7,10 +7,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy source and build
+# Copy source, generate Prisma client, then build
 COPY . .
-RUN npm run build
 RUN npx prisma generate
+RUN npm run build
 
 # Stage 2: Runner
 # check-ignore=critical_high_vulnerabilities
