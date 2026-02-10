@@ -85,7 +85,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                     e.stopPropagation();
                                     onPrevious?.();
                                 }}
-                                className="absolute left-4 md:left-10 z-[10001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-red-600 transition-all border border-white/10 shadow-2xl hover:scale-110 active:scale-90 group"
+                                className="absolute left-4 md:left-10 z-[10001] p-3 rounded-full bg-zinc-800/80 text-white hover:bg-red-600 transition-all border border-white/20 shadow-2xl hover:scale-110 active:scale-90 group"
                                 aria-label="Previous landmark"
                             >
                                 <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -95,7 +95,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                     e.stopPropagation();
                                     onNext?.();
                                 }}
-                                className="absolute right-4 md:right-10 z-[10001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-red-600 transition-all border border-white/10 shadow-2xl hover:scale-110 active:scale-90 group"
+                                className="absolute right-4 md:right-10 z-[10001] p-3 rounded-full bg-zinc-800/80 text-white hover:bg-red-600 transition-all border border-white/20 shadow-2xl hover:scale-110 active:scale-90 group"
                                 aria-label="Next landmark"
                             >
                                 <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
@@ -163,12 +163,12 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                                             <button
                                                                 key={img.id}
                                                                 onClick={() => { setLightboxIndex(idx); setLightboxOpen(true); }}
-                                                                className="shrink-0 rounded-lg overflow-hidden border border-white/10 hover:border-red-500/50 transition-colors"
+                                                                className="shrink-0 rounded-lg overflow-hidden border border-white/10 hover:border-red-500/50 transition-all cursor-pointer group/thumb"
                                                             >
                                                                 <img
                                                                     src={`/uploads/landmarks/thumb_${img.filename}`}
                                                                     alt={img.caption || `Photo ${idx + 1}`}
-                                                                    className="w-16 h-16 object-cover"
+                                                                    className="w-16 h-16 object-cover group-hover/thumb:scale-110 transition-transform duration-300"
                                                                 />
                                                             </button>
                                                         ))}
