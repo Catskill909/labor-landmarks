@@ -80,7 +80,7 @@ app.post('/api/admin/verify-password', (req, res) => {
     }
 });
 
-// GET all landmarks (Public API - Published only)
+// GET all landmarks (Public API - Published only, excludes submitter info)
 app.get('/api/landmarks', async (_req, res) => {
     res.set('Cache-Control', 'no-store');
     try {
@@ -89,7 +89,12 @@ app.get('/api/landmarks', async (_req, res) => {
             orderBy: { createdAt: 'desc' },
             include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
-        res.json(landmarks);
+        // Strip submitter contact info — admin-only fields
+        const publicLandmarks = landmarks.map((l) => {
+            const { submitterName, submitterEmail, submitterComment, ...rest } = l as typeof l & { submitterName?: string; submitterEmail?: string; submitterComment?: string };
+            return rest;
+        });
+        res.json(publicLandmarks);
     } catch (error) {
         console.error('Fetch landmarks error:', error);
         res.status(500).json({ error: 'Failed to fetch landmarks' });
@@ -143,7 +148,7 @@ app.get('/api/landmarks/:id', async (req, res) => {
 
 // POST new landmark (Admin or Public Suggestion)
 app.post('/api/landmarks', async (req, res) => {
-    const { name, city, state, country, category, description, address, lat, lng, isPublished, email, website, telephone, sourceUrl } = req.body;
+    const { name, city, state, country, category, description, address, lat, lng, isPublished, email, website, telephone, sourceUrl, submitterName, submitterEmail, submitterComment } = req.body;
     try {
         // Default isPublished to false if not provided (Public Suggestion)
         const publishedStatus = isPublished !== undefined ? isPublished : false;
@@ -167,7 +172,10 @@ app.post('/api/landmarks', async (req, res) => {
                 email,
                 website,
                 telephone,
-                sourceUrl
+                sourceUrl,
+                submitterName,
+                submitterEmail,
+                submitterComment
             } as any
         });
         res.status(201).json(newLandmark);

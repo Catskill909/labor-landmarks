@@ -36,7 +36,10 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         country: 'USA',
         email: '',
         website: '',
-        telephone: ''
+        telephone: '',
+        submitterName: '',
+        submitterEmail: '',
+        submitterComment: ''
     });
 
     const [isSuccess, setIsSuccess] = useState(false);
@@ -63,7 +66,10 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                 email: '',
                 website: '',
                 telephone: '',
-                country: 'USA'
+                country: 'USA',
+                submitterName: '',
+                submitterEmail: '',
+                submitterComment: ''
             });
             setQuery('');
             setSelectedFiles([]);
@@ -359,6 +365,43 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                         <option value="USA">USA</option>
                                         <option value="Canada">Canada</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            {/* Submitter Contact Info — at the very bottom, clearly separated */}
+                            <div className="md:col-span-2 border-t border-white/10 pt-6">
+                                <h3 className="text-sm font-bold text-gray-400 uppercase mb-1">Your Contact Info</h3>
+                                <p className="text-xs text-yellow-400 font-semibold mb-4">For admin review only — will not appear on the site.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Your Name</label>
+                                        <input
+                                            type="text"
+                                            value={formData.submitterName}
+                                            onChange={e => setFormData({ ...formData, submitterName: e.target.value })}
+                                            className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                            placeholder="Your name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Your Email</label>
+                                        <input
+                                            type="email"
+                                            value={formData.submitterEmail}
+                                            onChange={e => setFormData({ ...formData, submitterEmail: e.target.value })}
+                                            className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                            placeholder="you@example.com"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Comments on this Submission</label>
+                                    <textarea
+                                        value={formData.submitterComment}
+                                        onChange={e => setFormData({ ...formData, submitterComment: e.target.value })}
+                                        className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white min-h-[80px] focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                        placeholder="Any additional notes for the reviewer..."
+                                    />
                                 </div>
                             </div>
                         </div>

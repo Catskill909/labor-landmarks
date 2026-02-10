@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload, Rss, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload, Rss, Eye, UserCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Landmark } from './LandmarkCard';
 import LandmarkModal from './LandmarkModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
 import DetailModal from './DetailModal';
 import FeedModal from './FeedModal';
+import SubmitterInfoModal from './SubmitterInfoModal';
 
 // Helper for authenticated admin API calls
 const adminFetch = (url: string, options: RequestInit = {}) => {
@@ -31,6 +32,7 @@ const AdminDashboard: React.FC = () => {
     const [isFeedModalOpen, setIsFeedModalOpen] = useState(false);
     const [previewLandmark, setPreviewLandmark] = useState<Landmark | null>(null);
     const [filterStatus, setFilterStatus] = useState<'published' | 'draft'>('published');
+    const [submitterInfoLandmark, setSubmitterInfoLandmark] = useState<Landmark | null>(null);
 
     // Modal States
     const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -391,6 +393,15 @@ const AdminDashboard: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            {(landmark.submitterName || landmark.submitterEmail || landmark.submitterComment) && (
+                                                <button
+                                                    onClick={() => setSubmitterInfoLandmark(landmark)}
+                                                    className="p-2 rounded-lg bg-purple-900/30 text-purple-400 hover:bg-purple-900/50 hover:text-purple-300 transition-all border border-purple-500/20"
+                                                    title="Submitter Info"
+                                                >
+                                                    <UserCheck size={16} />
+                                                </button>
+                                            )}
                                             {(!landmark.isPublished && landmark.isPublished !== undefined) && (
                                                 <button
                                                     onClick={() => handleApprove(landmark)}
@@ -486,6 +497,16 @@ const AdminDashboard: React.FC = () => {
             <FeedModal
                 isOpen={isFeedModalOpen}
                 onClose={() => setIsFeedModalOpen(false)}
+            />
+
+            {/* Submitter Info Modal */}
+            <SubmitterInfoModal
+                isOpen={submitterInfoLandmark !== null}
+                onClose={() => setSubmitterInfoLandmark(null)}
+                submitterName={submitterInfoLandmark?.submitterName}
+                submitterEmail={submitterInfoLandmark?.submitterEmail}
+                submitterComment={submitterInfoLandmark?.submitterComment}
+                landmarkName={submitterInfoLandmark?.name ?? ''}
             />
 
             {/* Preview Modal - shows landmark as users see it */}

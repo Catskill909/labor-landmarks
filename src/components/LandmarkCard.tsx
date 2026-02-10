@@ -24,6 +24,9 @@ export interface Landmark {
     telephone?: string;
     country?: string;
     sourceUrl?: string;
+    submitterName?: string;
+    submitterEmail?: string;
+    submitterComment?: string;
     isPublished?: boolean;
     images?: LandmarkImage[];
 }

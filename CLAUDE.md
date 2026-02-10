@@ -35,6 +35,12 @@
 - Transaction client type: `Prisma.TransactionClient` (NOT `typeof prisma`)
 - After schema changes: run `npx prisma generate` before building
 
+### 6. Submitter Contact Fields (Admin-Only)
+- `submitterName`, `submitterEmail`, `submitterComment` are collected in the Suggest a Landmark modal
+- These are **never** exposed in the public API (`GET /api/landmarks`) — stripped server-side
+- They **are** returned by the admin API (`GET /api/admin/landmarks`) and admin backup
+- In the Admin Dashboard, a purple UserCheck icon appears when submitter info exists — click to view
+
 ## Architecture Quick Reference
 - **Frontend:** React + Vite (builds to `dist/`)
 - **Backend:** Express server at `server/index.ts`, runs via `tsx`

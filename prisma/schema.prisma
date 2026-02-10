@@ -21,8 +21,11 @@ model Landmark {
   email       String?
   website     String?
   telephone   String?
-  sourceUrl   String?          @unique
-  isPublished Boolean          @default(false)
+  sourceUrl        String?          @unique
+  submitterName    String?
+  submitterEmail   String?
+  submitterComment String?
+  isPublished      Boolean          @default(false)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   images      LandmarkImage[]
