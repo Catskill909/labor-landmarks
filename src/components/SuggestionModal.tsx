@@ -138,8 +138,13 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         e.preventDefault();
 
         try {
+            // If user typed in the search box but didn't select from dropdown,
+            // use the search query as the address fallback
+            const finalAddress = formData.address || query || '';
+
             const payload = {
                 ...formData,
+                address: finalAddress,
                 lat: formData.lat ? parseFloat(formData.lat) : 0,
                 lng: formData.lng ? parseFloat(formData.lng) : 0,
                 isPublished: false
@@ -321,6 +326,18 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                     onRemoveFile={(idx) => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
                                     maxFiles={5}
                                 />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Full Address</label>
+                                <input
+                                    type="text"
+                                    value={formData.address}
+                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                    placeholder="Auto-filled from search, or type manually"
+                                />
+                                <p className="text-xs text-gray-600 mt-1">Auto-filled when you select from address search above. You can also edit it directly.</p>
                             </div>
 
                             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">

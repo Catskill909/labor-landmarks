@@ -169,6 +169,13 @@ app.post('/api/landmarks', async (req, res) => {
         const parsedLat = parseFloat(lat);
         const parsedLng = parseFloat(lng);
 
+        const cleanString = (val: string | undefined | null): string | null => val?.trim() || null;
+        const cleanUrl = (val: string | undefined | null): string | null => {
+            const trimmed = val?.trim();
+            if (!trimmed) return null;
+            return trimmed.replace(/\/+$/, '');
+        };
+
         const newLandmark = await prisma.landmark.create({
             data: {
                 name,
@@ -181,13 +188,13 @@ app.post('/api/landmarks', async (req, res) => {
                 lat: isNaN(parsedLat) ? 0 : parsedLat,
                 lng: isNaN(parsedLng) ? 0 : parsedLng,
                 isPublished: publishedStatus,
-                email,
-                website,
-                telephone,
-                sourceUrl,
-                submitterName,
-                submitterEmail,
-                submitterComment
+                email: cleanString(email),
+                website: cleanUrl(website),
+                telephone: cleanString(telephone),
+                sourceUrl: cleanString(sourceUrl),
+                submitterName: cleanString(submitterName),
+                submitterEmail: cleanString(submitterEmail),
+                submitterComment: cleanString(submitterComment)
             } as any
         });
         res.status(201).json(newLandmark);
@@ -202,27 +209,37 @@ app.put('/api/landmarks/:id', async (req, res) => {
     const { id } = req.params;
     const { name, city, state, country, category, description, address, lat, lng, isPublished, email, website, telephone, sourceUrl } = req.body;
     try {
+        // Convert empty optional strings to null to avoid unique constraint violations
+        const cleanString = (val: string | undefined | null): string | null => val?.trim() || null;
+        // Strip trailing slashes from URLs
+        const cleanUrl = (val: string | undefined | null): string | null => {
+            const trimmed = val?.trim();
+            if (!trimmed) return null;
+            return trimmed.replace(/\/+$/, '');
+        };
+
         const updatedLandmark = await prisma.landmark.update({
             where: { id: parseInt(id) },
             data: {
                 name,
                 city,
                 state,
-                country,
+                country: country || 'USA',
                 category,
                 description,
                 address,
                 lat: parseFloat(lat),
                 lng: parseFloat(lng),
-                isPublished, // Allow toggling published status
-                email,
-                website,
-                telephone,
-                sourceUrl
+                isPublished,
+                email: cleanString(email),
+                website: cleanUrl(website),
+                telephone: cleanString(telephone),
+                sourceUrl: cleanString(sourceUrl)
             } as any
         });
         res.json(updatedLandmark);
     } catch (error) {
+        console.error('Update landmark error:', error);
         res.status(500).json({ error: 'Failed to update landmark' });
     }
 });
