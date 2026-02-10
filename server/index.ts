@@ -81,7 +81,7 @@ app.post('/api/admin/verify-password', (req, res) => {
 });
 
 // GET all landmarks (Public API - Published only, excludes submitter info)
-app.get('/api/landmarks', async (_req, res) => {
+app.get('/api/landmarks', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     try {
         const landmarks = await prisma.landmark.findMany({
@@ -89,10 +89,22 @@ app.get('/api/landmarks', async (_req, res) => {
             orderBy: { createdAt: 'desc' },
             include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
-        // Strip submitter contact info — admin-only fields
+        // Build base URL for image paths
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const host = req.headers['x-forwarded-host'] || req.get('host');
+        const baseUrl = `${protocol}://${host}`;
+
+        // Strip submitter contact info and add full image URLs
         const publicLandmarks = landmarks.map((l) => {
             const { submitterName, submitterEmail, submitterComment, ...rest } = l as typeof l & { submitterName?: string; submitterEmail?: string; submitterComment?: string };
-            return rest;
+            return {
+                ...rest,
+                images: rest.images.map((img) => ({
+                    ...img,
+                    url: `${baseUrl}/uploads/landmarks/${img.filename}`,
+                    thumbnailUrl: `${baseUrl}/uploads/landmarks/thumb_${img.filename}`
+                }))
+            };
         });
         res.json(publicLandmarks);
     } catch (error) {
