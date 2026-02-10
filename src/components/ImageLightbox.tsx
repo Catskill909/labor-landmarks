@@ -55,17 +55,17 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, currentIndex, isO
                         {currentIndex > 0 && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onNavigate(currentIndex - 1); }}
-                                className="absolute left-4 z-[20001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-red-600 transition-all border border-white/10 hover:scale-110"
+                                className="absolute left-4 md:left-10 z-[20001] p-3 rounded-full bg-zinc-800/80 text-white hover:bg-red-600 transition-all border border-white/20 shadow-2xl hover:scale-110 active:scale-90 group"
                             >
-                                <ChevronLeft size={24} />
+                                <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
                             </button>
                         )}
                         {currentIndex < images.length - 1 && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onNavigate(currentIndex + 1); }}
-                                className="absolute right-4 z-[20001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-red-600 transition-all border border-white/10 hover:scale-110"
+                                className="absolute right-4 md:right-10 z-[20001] p-3 rounded-full bg-zinc-800/80 text-white hover:bg-red-600 transition-all border border-white/20 shadow-2xl hover:scale-110 active:scale-90 group"
                             >
-                                <ChevronRight size={24} />
+                                <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
                             </button>
                         )}
                     </>
