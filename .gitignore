@@ -33,3 +33,6 @@ dist-ssr
 *.db-journal
 prisma/*.db
 prisma/*.db-journal
+
+# Uploaded images (local dev only, production uses Coolify persistent storage)
+uploads/

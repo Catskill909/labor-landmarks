@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Save, MapPin, Loader2, Check } from 'lucide-react';
 import { CATEGORIES } from '../constants/categories';
+import ImageUploader from './ImageUploader';
 
 interface SuggestionModalProps {
     isOpen: boolean;
@@ -39,6 +40,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
     });
 
     const [isSuccess, setIsSuccess] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     // Autocomplete State
     const [query, setQuery] = useState('');
@@ -64,6 +66,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                 country: 'USA'
             });
             setQuery('');
+            setSelectedFiles([]);
         }
     }, [isOpen]);
 
@@ -143,7 +146,18 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
             });
 
             if (response.ok) {
-                // Show success state instead of alert
+                const created = await response.json();
+
+                // Upload images if any were selected
+                if (selectedFiles.length > 0) {
+                    const imageData = new FormData();
+                    selectedFiles.forEach(file => imageData.append('images', file));
+                    await fetch(`/api/landmarks/${created.id}/images`, {
+                        method: 'POST',
+                        body: imageData
+                    });
+                }
+
                 setIsSuccess(true);
             } else {
                 alert('Failed to send suggestion. Please try again.');
@@ -291,6 +305,15 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                     className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white min-h-[100px] focus:outline-none focus:ring-2 focus:ring-red-600/50"
                                     placeholder="Why is this place significant?"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <ImageUploader
+                                    selectedFiles={selectedFiles}
+                                    onFilesSelected={(files) => setSelectedFiles(prev => [...prev, ...files])}
+                                    onRemoveFile={(idx) => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
+                                    maxFiles={5}
                                 />
                             </div>
 

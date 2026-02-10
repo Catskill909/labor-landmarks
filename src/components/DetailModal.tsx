@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, MapPin, Info, Navigation, ExternalLink, Phone, Mail, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Landmark } from './LandmarkCard';
+import ImageLightbox from './ImageLightbox';
 
 // Fix for default marker icon in React-Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -28,6 +29,9 @@ interface DetailModalProps {
 }
 
 const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, onNext, onPrevious, viewMode }) => {
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
     // Prevent scrolling when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -137,6 +141,41 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                                 </span>
                                             ))}
                                         </div>
+
+                                        {/* Image Gallery */}
+                                        {landmark.images && landmark.images.length > 0 && (
+                                            <div className="mb-6">
+                                                {/* Primary image */}
+                                                <div
+                                                    className="rounded-xl overflow-hidden border border-white/10 cursor-pointer group/img"
+                                                    onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
+                                                >
+                                                    <img
+                                                        src={`/uploads/landmarks/${landmark.images[0].filename}`}
+                                                        alt={landmark.images[0].caption || landmark.name}
+                                                        className="w-full h-48 object-cover group-hover/img:scale-105 transition-transform duration-300"
+                                                    />
+                                                </div>
+                                                {/* Thumbnail strip for multiple images */}
+                                                {landmark.images.length > 1 && (
+                                                    <div className="flex gap-2 mt-2 overflow-x-auto no-scrollbar">
+                                                        {landmark.images.map((img, idx) => (
+                                                            <button
+                                                                key={img.id}
+                                                                onClick={() => { setLightboxIndex(idx); setLightboxOpen(true); }}
+                                                                className="shrink-0 rounded-lg overflow-hidden border border-white/10 hover:border-red-500/50 transition-colors"
+                                                            >
+                                                                <img
+                                                                    src={`/uploads/landmarks/thumb_${img.filename}`}
+                                                                    alt={img.caption || `Photo ${idx + 1}`}
+                                                                    className="w-16 h-16 object-cover"
+                                                                />
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="space-y-4">
@@ -249,6 +288,16 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                             </motion.div>
                         </AnimatePresence>
                     </div>
+                    {/* Lightbox */}
+                    {landmark.images && landmark.images.length > 0 && (
+                        <ImageLightbox
+                            images={landmark.images}
+                            currentIndex={lightboxIndex}
+                            isOpen={lightboxOpen}
+                            onClose={() => setLightboxOpen(false)}
+                            onNavigate={setLightboxIndex}
+                        />
+                    )}
                 </div>
             )}
         </AnimatePresence>

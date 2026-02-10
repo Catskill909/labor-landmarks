@@ -38,10 +38,33 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                             A national guide to places that commemorate the history of working people — from monuments and murals to historic buildings, museums, and union sites.
                         </p>
                         <p>
-                            A project of the <a href="https://laborheritage.org" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:underline font-medium">Labor Heritage Foundation</a>, it promotes preservation, encourages visits, and helps uncover labor’s often-untold story.
+                            A project of the <a href="https://laborheritage.org" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:underline font-medium">Labor Heritage Foundation</a>, it promotes preservation, encourages visits, and helps uncover labor's often-untold story.
                         </p>
-                        <p className="text-sm border-l-2 border-red-500 pl-4 py-1 bg-white/5 rounded-r-lg">
-                            To add sites, click on <span className="font-bold text-white">"Suggest Site"</span> in the top of the page.
+                    </div>
+
+                    {/* How to Submit */}
+                    <div className="space-y-3">
+                        <h3 className="font-bold text-white text-base">How to Submit a Site</h3>
+                        <div className="space-y-2 text-sm text-gray-300">
+                            <div className="flex gap-3 items-start">
+                                <span className="shrink-0 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">1</span>
+                                <p>Click <span className="font-bold text-white">"Suggest a Landmark"</span> at the top of the page (or in the menu on mobile).</p>
+                            </div>
+                            <div className="flex gap-3 items-start">
+                                <span className="shrink-0 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">2</span>
+                                <p>Fill in the landmark name, location, and a brief description of its labor history significance.</p>
+                            </div>
+                            <div className="flex gap-3 items-start">
+                                <span className="shrink-0 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">3</span>
+                                <p>Select the most appropriate category for the site.</p>
+                            </div>
+                            <div className="flex gap-3 items-start">
+                                <span className="shrink-0 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">4</span>
+                                <p>Submit your suggestion. Our team will review it and add it to the inventory.</p>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                            All submissions are reviewed before being published. Your privacy is fully protected — we never share your information.
                         </p>
                     </div>
 

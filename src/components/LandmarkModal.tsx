@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, MapPin, Loader2 } from 'lucide-react';
 import { CATEGORIES } from '../constants/categories';
-import type { Landmark } from './LandmarkCard';
+import type { Landmark, LandmarkImage } from './LandmarkCard';
+import ImageUploader from './ImageUploader';
 
 interface NominatimResult {
     display_name: string;
@@ -41,6 +42,9 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         sourceUrl: ''
     });
 
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [existingImages, setExistingImages] = useState<LandmarkImage[]>([]);
+
     // Autocomplete State
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
@@ -64,6 +68,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 country: landmark.country || 'USA',
                 sourceUrl: landmark.sourceUrl || ''
             });
+            setExistingImages(landmark.images || []);
         } else {
             setFormData({
                 name: '',
@@ -81,7 +86,9 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 sourceUrl: ''
             });
             setQuery('');
+            setExistingImages([]);
         }
+        setSelectedFiles([]);
     }, [landmark, isOpen]);
 
     // Debounce search
@@ -143,6 +150,16 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
 
     if (!isOpen) return null;
 
+    const handleRemoveExistingImage = async (imageId: number) => {
+        if (!landmark) return;
+        try {
+            await fetch(`/api/landmarks/${landmark.id}/images/${imageId}`, { method: 'DELETE' });
+            setExistingImages(prev => prev.filter(img => img.id !== imageId));
+        } catch (error) {
+            console.error('Error deleting image:', error);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const method = landmark ? 'PUT' : 'POST';
@@ -155,11 +172,25 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 body: JSON.stringify({
                     ...formData,
                     lat: parseFloat(formData.lat),
-                    lng: parseFloat(formData.lng)
+                    lng: parseFloat(formData.lng),
+                    isPublished: landmark?.isPublished ?? true
                 })
             });
 
             if (response.ok) {
+                const saved = await response.json();
+                const landmarkId = landmark?.id ?? saved.id;
+
+                // Upload new images if any
+                if (selectedFiles.length > 0) {
+                    const imageData = new FormData();
+                    selectedFiles.forEach(file => imageData.append('images', file));
+                    await fetch(`/api/landmarks/${landmarkId}/images`, {
+                        method: 'POST',
+                        body: imageData
+                    });
+                }
+
                 onSuccess();
             } else {
                 alert('Failed to save landmark');
@@ -301,6 +332,17 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
                                 placeholder="Detailed history of the landmark..."
+                            />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <ImageUploader
+                                selectedFiles={selectedFiles}
+                                onFilesSelected={(files) => setSelectedFiles(prev => [...prev, ...files])}
+                                onRemoveFile={(idx) => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
+                                existingImages={existingImages}
+                                onRemoveExisting={handleRemoveExistingImage}
+                                maxFiles={10}
                             />
                         </div>
 

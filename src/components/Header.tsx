@@ -68,10 +68,10 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsSuggestionOpen(true)}
-                        className="hidden lg:flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium text-white rounded-lg transition-all border border-white/5"
+                        className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-sm font-bold text-white rounded-lg transition-all shadow-lg shadow-red-900/30 hover:shadow-red-900/50"
                     >
-                        <Plus size={16} className="text-red-400" />
-                        Suggest Site
+                        <Plus size={16} className="text-white" />
+                        Suggest a Landmark
                     </button>
 
                     {/* Hamburger Menu */}
@@ -135,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({
                                             <div className="p-1.5 bg-red-500/10 rounded-md text-red-400">
                                                 <Plus size={16} />
                                             </div>
-                                            <span>Suggest Site</span>
+                                            <span>Suggest a Landmark</span>
                                         </button>
                                     </div>
                                 </motion.div>

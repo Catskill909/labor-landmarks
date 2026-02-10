@@ -53,17 +53,29 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
                 >
                     <Popup className="custom-popup">
                         <div
-                            className="p-1 cursor-pointer group"
+                            className="cursor-pointer group"
                             onClick={() => {
                                 onSelectLandmark(landmark);
                                 map.closePopup();
                             }}
                         >
-                            <h3 className="font-bold text-sm mb-1 group-hover:text-red-500 transition-colors uppercase tracking-tight pr-8">{landmark.name}</h3>
-                            <p className="text-xs text-gray-400 mb-2">{landmark.city}, {landmark.state}</p>
-                            <span className="text-[10px] text-red-500 font-bold group-hover:underline">
-                                VIEW DETAILS
-                            </span>
+                            {landmark.images && landmark.images.length > 0 && (
+                                <div className="-mx-[20px] -mt-[20px] mb-1.5 overflow-hidden">
+                                    <img
+                                        src={`/uploads/landmarks/thumb_${landmark.images[0].filename}`}
+                                        alt={landmark.name}
+                                        className="w-full h-36 object-cover"
+                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                    />
+                                </div>
+                            )}
+                            <div className="px-1">
+                                <h3 className="font-bold text-sm leading-tight group-hover:text-red-500 transition-colors uppercase tracking-tight pr-8">{landmark.name}</h3>
+                                <p className="text-xs text-gray-400 leading-tight">{landmark.city}, {landmark.state}</p>
+                                <span className="text-[10px] text-red-500 font-bold group-hover:underline">
+                                    VIEW DETAILS
+                                </span>
+                            </div>
                         </div>
                     </Popup>
                 </Marker>

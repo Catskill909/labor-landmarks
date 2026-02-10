@@ -227,13 +227,45 @@ As an expert engineer, I recommend this for an **"All-in-One"** portable solutio
 - [x] **Admin Consistency**: Replaced all native browser alerts with custom `ConfirmationModal` components for a unified, modern design.
 - [x] **Data Integrity**: Established database restoration workflow and verified persistence.
 
-### Phase 7: Future Enhancements (Recommended Next)
-- [ ] **Email Notifications**:
-    - **Strategy**: Use your existing `server/index.ts` to trigger emails when a new suggestion arrives.
-    - **Option A (Recommended)**: **Resend**. Modern, free tier, easy API. (`npm install resend`).
-    - **Option B**: **Nodemailer**. Use your own SMTP/Gmail. Zero cost, slightly more config.
-- [ ] **Authentication**: Secure the `/admin` route with password protection (Simple Auth or Clerk/Auth0).
-- [ ] **Image Upload**: Replace image URLs with actual file uploads (stored in filesystem volume).
+### Phase 7: Alpha Launch Client Feedback (Completed — Feb 2026)
+
+All changes implemented locally, build passes (`tsc --noEmit` clean), **NOT YET COMMITTED OR PUSHED**.
+
+#### 7A. UI Quick Wins (Done)
+- [x] **"Suggest a Landmark" button**: Renamed from "Suggest Site" in Header.tsx (desktop + mobile). Restyled to prominent `bg-red-600 hover:bg-red-700` with white text.
+- [x] **About modal access**: Added clickable `Info` icon in bottom-left footer (App.tsx, z-[1500]) that opens AboutModal. Also accessible from hamburger menu.
+- [x] **Copyright update**: Changed from "Labor Radio Network" to "The Labor Heritage Foundation" with link to laborheritage.org.
+- [x] **AboutModal text**: Updated references from "Suggest Site" to "Suggest a Landmark".
+
+#### 7B. Image Gallery System — Schema + API (Done)
+- [x] **Prisma schema**: Added `LandmarkImage` model with `id`, `landmarkId`, `filename`, `caption`, `sortOrder`, `createdAt`. Cascade delete from Landmark.
+- [x] **Migration**: `20260210000727_add_landmark_images` (in `prisma/migrations/`)
+- [x] **Dependencies added**: `multer` (file uploads), `sharp` (thumbnail generation), `@types/multer`, `@types/sharp`
+- [x] **API endpoints** (server/index.ts):
+  - `POST /api/landmarks/:id/images` — multipart upload, saves original + 400px thumbnail via sharp
+  - `DELETE /api/landmarks/:id/images/:imageId` — admin-protected, removes files + DB record
+  - Static serving: `app.use('/uploads', express.static(...))`
+  - All landmark queries now include `include: { images: { orderBy: { sortOrder: 'asc' } } }`
+- [x] **Dockerfile**: Added `RUN mkdir -p /app/data /app/uploads/landmarks`
+
+#### 7C. Image Gallery System — Frontend (Done)
+- [x] **LandmarkCard.tsx**: Added `LandmarkImage` interface export, `images` field to `Landmark` interface, thumbnail display on cards
+- [x] **DetailModal.tsx**: Gallery section with primary image + thumbnail strip, click to open lightbox
+- [x] **MapView.tsx**: Map marker popups show thumbnail image (h-36, full-bleed) above landmark name when images exist
+- [x] **ImageLightbox.tsx** (NEW): Full-screen overlay at z-[20000], keyboard nav (Escape/arrows), Framer Motion animations
+- [x] **ImageUploader.tsx** (NEW): Reusable drag-and-drop component with previews, file validation, existing image management
+- [x] **SuggestionModal.tsx**: Added ImageUploader (max 5 files), two-step submit (create landmark, then upload images)
+- [x] **LandmarkModal.tsx**: Added ImageUploader (max 10 files) with existing image display/delete for admin editing
+
+#### 7D. Dev Tooling (Done)
+- [x] **dev.sh** (NEW): Startup script that force-kills processes on ports 3001/5173/5174, verifies ports free, runs prisma generate, starts both servers with trap for clean Ctrl+C
+- [x] **package.json**: `"dev:fullstack": "./dev.sh"`
+
+### Phase 8: Future Enhancements (Recommended Next)
+- [ ] **Email Notifications**: Resend (recommended) or Nodemailer for new suggestion alerts
+- [ ] **Authentication**: Secure `/admin` route with password protection
+- [ ] **Image reordering**: Drag-to-reorder images in admin modal (sortOrder)
+- [ ] **Image captions**: Caption editing UI in admin modal
 
 ---
 
@@ -301,8 +333,61 @@ When picking up from this document, future AI agents should:
 
 ---
 
+## CURRENT STATE (Feb 9, 2026) — READ THIS FIRST IN NEXT SESSION
+
+### Git Status: ALL CHANGES UNCOMMITTED
+Everything from Phase 7 is implemented and working locally but **nothing has been committed or pushed yet**.
+
+Modified files:
+- `Dockerfile`, `package.json`, `package-lock.json`, `prisma/schema.prisma`
+- `server/index.ts`, `src/App.tsx`, `src/components/AboutModal.tsx`
+- `src/components/DetailModal.tsx`, `src/components/Header.tsx`
+- `src/components/LandmarkCard.tsx`, `src/components/LandmarkModal.tsx`
+- `src/components/SuggestionModal.tsx`, `src/components/MapView.tsx`
+
+New files:
+- `app-updates.md` — detailed implementation plan for Phase 7
+- `dev.sh` — dev server startup script
+- `prisma/migrations/20260210000727_add_landmark_images/` — migration
+- `src/components/ImageLightbox.tsx` — lightbox component
+- `src/components/ImageUploader.tsx` — drag-and-drop upload component
+
+### Build Status: CLEAN
+- `npx tsc --noEmit` passes with zero errors
+- Local dev server runs and serves 273 landmarks
+
+### Image System Architecture (No base64 — real files)
+Images are stored as real files on disk, NOT base64 in the database:
+1. **Upload**: `multer` receives multipart form data into memory buffers
+2. **Processing**: `sharp` saves original file + generates 400px-wide JPEG thumbnail (prefixed `thumb_`)
+3. **Storage**: Files written to `./uploads/landmarks/` (local) or `/app/uploads/landmarks/` (production)
+4. **Serving**: `express.static` serves `/uploads/` directory as static files
+5. **Display**: Frontend references `/uploads/landmarks/thumb_filename.jpg` for thumbnails, full filename for lightbox
+6. **Cleanup**: `onDelete: Cascade` removes DB records; DELETE endpoint also removes files from disk
+
+### What Needs To Happen Next
+1. **COMMIT** all changes (build is clean, ready to commit)
+2. **TEST** image upload locally — upload some test images via admin and suggestion form (already tested and working)
+3. **PUSH** to main → Coolify auto-deploys
+4. **COOLIFY CONFIG**: Add persistent storage volume in Coolify: mount point `/app/uploads` — without this, uploaded images will be lost on every redeploy
+5. **PRODUCTION DATA SYNC**: After deploy, use Admin Import/Export to sync data if needed
+
+### z-index Layering Reference
+```
+z-40          — default footer (was)
+z-[1000]      — filter bar
+z-[1500]      — footer (current, above map controls)
+z-[2000]      — header
+z-[9999]      — detail modal
+z-[10000]     — suggestion modal / landmark modal
+z-[20000]     — image lightbox
+```
+
+### Express 5 Note
+Express 5 types `req.params` values as `string | string[]`. All route handlers use `as string` casts: `parseInt(req.params.id as string)`.
+
+---
+
 ## Brainstorming Ideas
-- **Crowdsourced Suggestions**: Add a public "Suggest a Landmark" form that sends a draft to curators in the Admin section.
 - **Museum Integration**: Allow landmarks to be linked to existing museum collections.
-- **Export/Import**: Bulk CSV/JSON import for large scale history inventories.
 - **Map Interaction**: Long-press on the map to "Quick-Add" a landmark at those coordinates.

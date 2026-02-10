@@ -2,6 +2,13 @@ import React from 'react';
 import { MapPin, Info, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+export interface LandmarkImage {
+    id: number;
+    filename: string;
+    caption?: string;
+    sortOrder: number;
+}
+
 export interface Landmark {
     id: number;
     name: string;
@@ -15,9 +22,10 @@ export interface Landmark {
     email?: string;
     website?: string;
     telephone?: string;
-    country?: string;        // Optional to match Prisma schema
+    country?: string;
     sourceUrl?: string;
     isPublished?: boolean;
+    images?: LandmarkImage[];
 }
 
 interface LandmarkCardProps {
@@ -48,6 +56,17 @@ const LandmarkCard: React.FC<LandmarkCardProps> = ({ landmark, onClick }) => {
             <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-red-400 transition-colors">
                 {landmark.name}
             </h3>
+
+            {landmark.images && landmark.images.length > 0 && (
+                <div className="mb-3 rounded-xl overflow-hidden border border-white/5">
+                    <img
+                        src={`/uploads/landmarks/thumb_${landmark.images[0].filename}`}
+                        alt={landmark.name}
+                        className="w-full h-36 object-cover"
+                        loading="lazy"
+                    />
+                </div>
+            )}
 
             <div className="flex flex-wrap gap-2 mb-4">
                 {landmark.category.split(',').map((cat) => (

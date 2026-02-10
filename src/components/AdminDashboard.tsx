@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload, Rss } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, ArrowLeft, Landmark as LandmarkIcon, Check, Loader2, Download, Upload, Rss, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Landmark } from './LandmarkCard';
 import LandmarkModal from './LandmarkModal.tsx';
 import ConfirmationModal from './ConfirmationModal.tsx';
+import DetailModal from './DetailModal';
 import FeedModal from './FeedModal';
 
 // Helper for authenticated admin API calls
@@ -28,6 +29,7 @@ const AdminDashboard: React.FC = () => {
     const [selectedLandmark, setSelectedLandmark] = useState<Landmark | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isFeedModalOpen, setIsFeedModalOpen] = useState(false);
+    const [previewLandmark, setPreviewLandmark] = useState<Landmark | null>(null);
     const [filterStatus, setFilterStatus] = useState<'published' | 'draft'>('published');
 
     // Modal States
@@ -399,6 +401,13 @@ const AdminDashboard: React.FC = () => {
                                                 </button>
                                             )}
                                             <button
+                                                onClick={() => setPreviewLandmark(landmark)}
+                                                className="p-2 rounded-lg bg-zinc-800 text-gray-400 hover:text-blue-400 hover:bg-zinc-700 transition-all"
+                                                title="Preview"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                            <button
                                                 onClick={() => handleEdit(landmark)}
                                                 className="p-2 rounded-lg bg-zinc-800 text-gray-400 hover:text-white hover:bg-zinc-700 transition-all"
                                                 title="Edit"
@@ -477,6 +486,13 @@ const AdminDashboard: React.FC = () => {
             <FeedModal
                 isOpen={isFeedModalOpen}
                 onClose={() => setIsFeedModalOpen(false)}
+            />
+
+            {/* Preview Modal - shows landmark as users see it */}
+            <DetailModal
+                landmark={previewLandmark}
+                isOpen={previewLandmark !== null}
+                onClose={() => setPreviewLandmark(null)}
             />
         </div>
     );

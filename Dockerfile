@@ -38,7 +38,7 @@ ENV PORT=3001
 # Default database location inside the container volume
 ENV DATABASE_URL="file:/app/data/dev.db"
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data /app/uploads/landmarks
 
 EXPOSE 3001
 

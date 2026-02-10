@@ -1,10 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Info, Shield } from 'lucide-react';
 import Header from './components/Header';
 import FilterBar from './components/FilterBar';
 import ListView from './components/ListView';
 import MapView from './components/MapView';
 import DetailModal from './components/DetailModal';
+import AboutModal from './components/AboutModal';
+import PrivacyModal from './components/PrivacyModal';
 import AdminDashboard from './components/AdminDashboard';
 import type { Landmark } from './components/LandmarkCard';
 import { CATEGORIES } from './constants/categories';
@@ -17,6 +20,8 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [landmarks, setLandmarks] = useState<Landmark[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
   const fetchLandmarks = async () => {
     try {
@@ -129,15 +134,33 @@ function App() {
               viewMode={viewMode}
             />
 
-            <footer className="fixed bottom-0 left-0 right-0 glass px-6 py-3 flex items-center justify-between text-[10px] text-gray-500 z-40 border-t border-white/5">
+            <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+            <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
+
+            <footer className="fixed bottom-0 left-0 right-0 glass px-6 py-3 flex items-center justify-between text-[10px] text-gray-500 z-[1500] border-t border-white/5">
               <div className="flex items-center gap-4">
-                <span>© 2026 Labor Radio Network</span>
+                <button
+                  onClick={() => setIsAboutOpen(true)}
+                  className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors font-medium"
+                >
+                  <Info size={14} />
+                  <span>About Labor Landmarks</span>
+                </button>
+                <span>•</span>
+                <a href="https://laborheritage.org" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  &copy; 2026 The Labor Heritage Foundation
+                </a>
                 <span>•</span>
                 <span>Showing {filteredLandmarks.length} of {landmarks.length} landmarks</span>
               </div>
               <div className="flex items-center gap-4">
-                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+                <button
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors font-medium"
+                >
+                  <Shield size={14} />
+                  <span>Privacy Policy</span>
+                </button>
               </div>
             </footer>
           </div>

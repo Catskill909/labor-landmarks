@@ -3,7 +3,10 @@ import cors from 'cors';
 import { PrismaClient, Prisma } from '@prisma/client';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +19,28 @@ const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Image uploads directory — Coolify persistent storage mounts here in production
+const uploadsDir = path.join(__dirname, '../uploads/landmarks');
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Multer config for image uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JPEG, PNG, and WebP images are allowed'));
+        }
+    }
+});
+
+// Serve uploaded images as static files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Admin Authentication Middleware
 // Verifies the admin password from Authorization header (Bearer token)
@@ -61,7 +86,8 @@ app.get('/api/landmarks', async (_req, res) => {
     try {
         const landmarks = await prisma.landmark.findMany({
             where: { isPublished: true },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
         res.json(landmarks);
     } catch (error) {
@@ -75,7 +101,8 @@ app.get('/api/admin/landmarks', adminAuth, async (_req, res) => {
     res.set('Cache-Control', 'no-store');
     try {
         const landmarks = await prisma.landmark.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
         res.json(landmarks);
     } catch (error) {
@@ -100,7 +127,8 @@ app.get('/api/landmarks/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const landmark = await prisma.landmark.findUnique({
-            where: { id: parseInt(id) }
+            where: { id: parseInt(id) },
+            include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
         if (landmark) {
             res.json(landmark);
@@ -196,7 +224,8 @@ app.delete('/api/landmarks/:id', async (req, res) => {
 app.get('/api/admin/backup', adminAuth, async (_req, res) => {
     try {
         const landmarks = await prisma.landmark.findMany({
-            orderBy: { id: 'asc' }
+            orderBy: { id: 'asc' },
+            include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
         const date = new Date().toISOString().split('T')[0];
         const filename = `landmarks_backup_${date}.json`;
@@ -207,6 +236,90 @@ app.get('/api/admin/backup', adminAuth, async (_req, res) => {
         res.send(JSON.stringify(landmarks, null, 2));
     } catch (error) {
         res.status(500).json({ error: 'Failed to generate backup' });
+    }
+});
+
+// POST upload images for a landmark
+app.post('/api/landmarks/:id/images', upload.array('images', 10), async (req, res) => {
+    const landmarkId = parseInt(req.params.id as string);
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'No files uploaded' });
+    }
+
+    try {
+        const landmark = await prisma.landmark.findUnique({ where: { id: landmarkId } });
+        if (!landmark) {
+            return res.status(404).json({ error: 'Landmark not found' });
+        }
+
+        // Get current max sortOrder for this landmark
+        const maxSort = await prisma.landmarkImage.findFirst({
+            where: { landmarkId },
+            orderBy: { sortOrder: 'desc' }
+        });
+        let nextSort = (maxSort?.sortOrder ?? -1) + 1;
+
+        const created = [];
+        for (const file of files) {
+            const timestamp = Date.now();
+            const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const filename = `${landmarkId}_${timestamp}_${safeName}`;
+            const thumbFilename = `thumb_${filename}`;
+
+            // Save original
+            const originalPath = path.join(uploadsDir, filename);
+            await sharp(file.buffer).toFile(originalPath);
+
+            // Generate thumbnail (400px wide)
+            const thumbPath = path.join(uploadsDir, thumbFilename);
+            await sharp(file.buffer)
+                .resize(400, null, { withoutEnlargement: true })
+                .jpeg({ quality: 80 })
+                .toFile(thumbPath);
+
+            const image = await prisma.landmarkImage.create({
+                data: {
+                    landmarkId,
+                    filename,
+                    sortOrder: nextSort++
+                }
+            });
+            created.push(image);
+        }
+
+        res.status(201).json(created);
+    } catch (error) {
+        console.error('Image upload error:', error);
+        res.status(500).json({ error: 'Failed to upload images' });
+    }
+});
+
+// DELETE an image from a landmark
+app.delete('/api/landmarks/:id/images/:imageId', adminAuth, async (req, res) => {
+    const landmarkId = parseInt(req.params.id as string);
+    const imageId = parseInt(req.params.imageId as string);
+    try {
+        const image = await prisma.landmarkImage.findFirst({
+            where: { id: imageId, landmarkId }
+        });
+        if (!image) {
+            return res.status(404).json({ error: 'Image not found' });
+        }
+
+        // Delete files from disk
+        const originalPath = path.join(uploadsDir, image.filename);
+        const thumbPath = path.join(uploadsDir, `thumb_${image.filename}`);
+        try { fs.unlinkSync(originalPath); } catch { /* file may not exist */ }
+        try { fs.unlinkSync(thumbPath); } catch { /* file may not exist */ }
+
+        // Delete DB record
+        await prisma.landmarkImage.delete({ where: { id: imageId } });
+        res.status(204).send();
+    } catch (error) {
+        console.error('Image delete error:', error);
+        res.status(500).json({ error: 'Failed to delete image' });
     }
 });
 
