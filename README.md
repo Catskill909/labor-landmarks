@@ -45,10 +45,11 @@ A professional, full-stack interactive map application designed to explore, visu
 
 This project is fully containerized and ready for high-reliability deployment on platforms like **Coolify** or generic Docker hosts.
 
-- **Database Storage**: Uses a Docker volume to persist the SQLite database (`/app/data/dev.db`) across restarts and code deployments.
-- **Image Storage**: Uploaded images stored on disk (`/app/uploads/landmarks/`), served via Express static middleware. Requires Coolify persistent storage volume at `/app/uploads`.
+- **Database Storage**: Uses a Docker volume to persist the SQLite database (`/app/data/dev.db`). **CRITICAL: Requires Coolify persistent storage volume at `/app/data`** — without this, the database is destroyed on every deploy.
+- **Image Storage**: Uploaded images stored on disk (`/app/uploads/landmarks/`). **CRITICAL: Requires Coolify persistent storage volume at `/app/uploads`** — without this, uploaded images are lost on every deploy.
 - **Auto-Migration**: The container automatically applies database schema updates on startup.
 - **Auto-Seeding Safety**: Built-in protection to prevent production data overwrite during deployments.
+- **Volume Safety Check**: Startup logs a warning if no existing database is found, helping detect missing volume mounts.
 
 ## � Local vs Production (IMPORTANT!)
 

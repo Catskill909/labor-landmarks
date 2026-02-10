@@ -11,8 +11,10 @@ services:
       - PORT=3001
       # DATABASE_URL is set in Dockerfile to /app/data/dev.db
     volumes:
-      # Map the named volume to the data directory
-      - labor_data:/app/data
+      # BOTH volumes are REQUIRED — without them, data is lost on every deploy
+      - labor_data:/app/data        # SQLite database
+      - labor_uploads:/app/uploads  # Uploaded images
 
 volumes:
   labor_data:
+  labor_uploads:

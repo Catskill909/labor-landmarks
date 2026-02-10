@@ -78,6 +78,19 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 
 ---
 
+## COOLIFY PERSISTENT STORAGE — REQUIRED VOLUMES
+
+**Both volumes below MUST exist in Coolify or data will be DESTROYED on every deploy.**
+
+| Volume | Destination Path | What It Stores | Without It |
+|--------|-----------------|----------------|------------|
+| `*-labor-land*` | `/app/data` | SQLite database (all landmarks) | **ALL landmarks lost every deploy** |
+| `*-landmarks-uploads` | `/app/uploads` | Uploaded images & thumbnails | All images lost every deploy |
+
+**Verify:** Coolify → Configuration → Persistent Storage → should show **2 volumes**.
+
+---
+
 ## ABSOLUTE RULES (NEVER BREAK THESE)
 
 | Rule | Why |
@@ -86,6 +99,7 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 | 🔴 NEVER run scripts against production | Scripts use local .env DATABASE_URL |
 | 🔴 NEVER manually edit .db files | Use Admin Dashboard or Prisma Studio |
 | 🔴 NEVER confuse localhost with production URL | Check the URL bar before every action |
+| 🔴 NEVER deploy without verifying BOTH Coolify volumes exist | Without `/app/data` volume, DB is wiped every deploy |
 | 🟢 ALWAYS ask user which environment they mean | "Local or production?" |
 | 🟢 ALWAYS backup production before importing | Click Backup JSON first |
 | 🟢 ALWAYS verify record counts after sync | Compare local vs production counts |
