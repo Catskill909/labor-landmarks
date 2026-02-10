@@ -152,11 +152,25 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
 
     const handleRemoveExistingImage = async (imageId: number) => {
         if (!landmark) return;
+        if (!window.confirm('Delete this image? This cannot be undone.')) return;
         try {
-            await fetch(`/api/landmarks/${landmark.id}/images/${imageId}`, { method: 'DELETE' });
-            setExistingImages(prev => prev.filter(img => img.id !== imageId));
+            const token = sessionStorage.getItem('adminToken');
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const res = await fetch(`/api/landmarks/${landmark.id}/images/${imageId}`, {
+                method: 'DELETE',
+                headers
+            });
+            if (res.ok) {
+                setExistingImages(prev => prev.filter(img => img.id !== imageId));
+            } else {
+                alert('Failed to delete image');
+            }
         } catch (error) {
             console.error('Error deleting image:', error);
+            alert('Error deleting image');
         }
     };
 
