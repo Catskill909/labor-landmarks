@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Landmark, Search, X, Plus, Menu, Mic, Info, ExternalLink } from 'lucide-react';
+import { Landmark, Search, X, Plus, Menu, Building2, Info, ExternalLink } from 'lucide-react';
 import SuggestionModal from './SuggestionModal';
 import AboutModal from './AboutModal';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -97,16 +97,16 @@ const Header: React.FC<HeaderProps> = ({
                                     </div>
 
                                     <a
-                                        href="https://www.laborradionetwork.org/"
+                                        href="https://www.laborheritage.org/"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-gray-200 transition-colors group"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         <div className="p-1.5 bg-blue-500/10 rounded-md text-blue-400 group-hover:bg-blue-500/20 transition-colors">
-                                            <Mic size={16} />
+                                            <Building2 size={16} />
                                         </div>
-                                        <span>Podcast Network</span>
+                                        <span>Labor Heritage Foundation</span>
                                         <ExternalLink size={12} className="ml-auto text-gray-600 group-hover:text-gray-400" />
                                     </a>
 
