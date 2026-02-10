@@ -3,6 +3,7 @@ import { X, Save, MapPin, Loader2 } from 'lucide-react';
 import { CATEGORIES } from '../constants/categories';
 import type { Landmark, LandmarkImage } from './LandmarkCard';
 import ImageUploader from './ImageUploader';
+import ConfirmationModal from './ConfirmationModal';
 
 interface NominatimResult {
     display_name: string;
@@ -44,6 +45,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
 
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [existingImages, setExistingImages] = useState<LandmarkImage[]>([]);
+    const [imageToDelete, setImageToDelete] = useState<number | null>(null);
 
     // Autocomplete State
     const [query, setQuery] = useState('');
@@ -150,21 +152,24 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
 
     if (!isOpen) return null;
 
-    const handleRemoveExistingImage = async (imageId: number) => {
-        if (!landmark) return;
-        if (!window.confirm('Delete this image? This cannot be undone.')) return;
+    const handleRemoveExistingImage = (imageId: number) => {
+        setImageToDelete(imageId);
+    };
+
+    const confirmDeleteImage = async () => {
+        if (!landmark || imageToDelete === null) return;
         try {
             const token = sessionStorage.getItem('adminToken');
             const headers: Record<string, string> = {};
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
-            const res = await fetch(`/api/landmarks/${landmark.id}/images/${imageId}`, {
+            const res = await fetch(`/api/landmarks/${landmark.id}/images/${imageToDelete}`, {
                 method: 'DELETE',
                 headers
             });
             if (res.ok) {
-                setExistingImages(prev => prev.filter(img => img.id !== imageId));
+                setExistingImages(prev => prev.filter(img => img.id !== imageToDelete));
             } else {
                 alert('Failed to delete image');
             }
@@ -172,6 +177,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
             console.error('Error deleting image:', error);
             alert('Error deleting image');
         }
+        setImageToDelete(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -215,7 +221,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         }
     };
 
-    return (
+    return (<>
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
@@ -449,7 +455,17 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 </form>
             </div>
         </div>
-    );
+
+        <ConfirmationModal
+            isOpen={imageToDelete !== null}
+            onClose={() => setImageToDelete(null)}
+            onConfirm={confirmDeleteImage}
+            title="Delete Image"
+            message="Are you sure you want to delete this image? This cannot be undone."
+            confirmText="Delete"
+            isDestructive
+        />
+    </>);
 };
 
 export default LandmarkModal;
