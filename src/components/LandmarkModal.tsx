@@ -185,14 +185,21 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         const method = landmark ? 'PUT' : 'POST';
         const url = landmark ? `/api/landmarks/${landmark.id}` : '/api/landmarks';
 
+        const lat = parseFloat(formData.lat);
+        const lng = parseFloat(formData.lng);
+        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            alert('Please enter valid coordinates. Latitude must be between -90 and 90, longitude between -180 and 180.');
+            return;
+        }
+
         try {
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    lat: parseFloat(formData.lat),
-                    lng: parseFloat(formData.lng),
+                    lat,
+                    lng,
                     isPublished: landmark?.isPublished ?? true
                 })
             });
@@ -415,11 +422,13 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Latitude</label>
                             <input
                                 required
-                                type="number"
-                                step="any"
+                                type="text"
+                                inputMode="decimal"
+                                pattern="-?[0-9]*\.?[0-9]+"
                                 value={formData.lat}
                                 onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                placeholder="e.g. 41.8781"
                             />
                         </div>
 
@@ -427,11 +436,13 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Longitude</label>
                             <input
                                 required
-                                type="number"
-                                step="any"
+                                type="text"
+                                inputMode="decimal"
+                                pattern="-?[0-9]*\.?[0-9]+"
                                 value={formData.lng}
                                 onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                placeholder="e.g. -87.6298"
                             />
                         </div>
                     </div>

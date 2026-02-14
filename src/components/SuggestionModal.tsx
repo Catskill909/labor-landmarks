@@ -142,11 +142,32 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
             // use the search query as the address fallback
             const finalAddress = formData.address || query || '';
 
+            // If lat/lng are missing but we have an address, try to geocode it
+            let lat = formData.lat ? parseFloat(formData.lat) : 0;
+            let lng = formData.lng ? parseFloat(formData.lng) : 0;
+
+            if ((lat === 0 && lng === 0) && finalAddress.length > 2) {
+                try {
+                    const countryCode = formData.country.toLowerCase() === 'canada' ? 'ca' : 'us';
+                    const geoRes = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalAddress)}&limit=1&countrycodes=${countryCode}`,
+                        { headers: { 'User-Agent': 'LaborLandmarksApp/1.0' } }
+                    );
+                    const geoData = await geoRes.json();
+                    if (geoData.length > 0) {
+                        lat = parseFloat(geoData[0].lat);
+                        lng = parseFloat(geoData[0].lon);
+                    }
+                } catch {
+                    // Geocoding failed — submit with 0,0 and let admin fix it
+                }
+            }
+
             const payload = {
                 ...formData,
                 address: finalAddress,
-                lat: formData.lat ? parseFloat(formData.lat) : 0,
-                lng: formData.lng ? parseFloat(formData.lng) : 0,
+                lat,
+                lng,
                 isPublished: false
             };
 
