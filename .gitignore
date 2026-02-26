@@ -36,3 +36,7 @@ prisma/*.db-journal
 
 # Uploaded images (local dev only, production uses Coolify persistent storage)
 uploads/
+
+# Local planning/reference docs
+client-changes-plan.md
+database-client-project.md
