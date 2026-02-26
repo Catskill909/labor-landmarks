@@ -14,6 +14,8 @@ interface NominatimResult {
         town?: string;
         village?: string;
         state?: string;
+        country?: string;
+        country_code?: string;
         ISO3166_2_lvl4?: string; // State Code like US-IL
     };
 }
@@ -99,8 +101,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
             if (query.length > 2 && showSuggestions) {
                 setIsSearching(true);
                 try {
-                    const countryCode = formData.country.toLowerCase() === 'canada' ? 'ca' : 'us';
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=${countryCode}`, {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`, {
                         headers: {
                             'User-Agent': 'LaborLandmarksApp/1.0'
                         }
@@ -124,7 +125,8 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         // Parse State code if possible, Nominatim usually gives "ISO3166_2_lvl4" like "US-NY"
         let stateCode = item.address.state || '';
         if (item.address.ISO3166_2_lvl4) {
-            stateCode = item.address.ISO3166_2_lvl4.replace('US-', '');
+            // Strip country prefix from ISO code (e.g., "US-NY" → "NY", "AU-VIC" → "VIC")
+            stateCode = item.address.ISO3166_2_lvl4.replace(/^[A-Z]{2}-/, '');
         }
 
         setFormData(prev => ({
@@ -133,7 +135,8 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
             lat: item.lat,
             lng: item.lon,
             city: item.address.city || item.address.town || item.address.village || '',
-            state: stateCode
+            state: stateCode,
+            country: item.address.country || prev.country
         }));
         setQuery(item.display_name);
         setShowSuggestions(false);
@@ -304,15 +307,14 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">State (Abbr)</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">State/Province</label>
                             <input
                                 required
                                 type="text"
-                                maxLength={2}
                                 value={formData.state}
                                 onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
-                                placeholder="IL"
+                                placeholder="e.g. IL, VIC, ON"
                             />
                         </div>
 

@@ -18,6 +18,8 @@ interface NominatimResult {
         town?: string;
         village?: string;
         state?: string;
+        country?: string;
+        country_code?: string;
         ISO3166_2_lvl4?: string; // State Code like US-IL
     };
 }
@@ -33,7 +35,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         address: '',
         lat: '',
         lng: '',
-        country: 'USA',
+        country: '',
         email: '',
         website: '',
         telephone: '',
@@ -43,6 +45,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
     });
 
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     // Autocomplete State
@@ -66,7 +69,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                 email: '',
                 website: '',
                 telephone: '',
-                country: 'USA',
+                country: '',
                 submitterName: '',
                 submitterEmail: '',
                 submitterComment: ''
@@ -82,7 +85,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
             if (query.length > 2 && showSuggestions) {
                 setIsSearching(true);
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=us`, {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`, {
                         headers: {
                             'User-Agent': 'LaborLandmarksApp/1.0'
                         }
@@ -106,7 +109,8 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         // Parse State code if possible, Nominatim usually gives "ISO3166_2_lvl4" like "US-NY"
         let stateCode = item.address.state || '';
         if (item.address.ISO3166_2_lvl4) {
-            stateCode = item.address.ISO3166_2_lvl4.replace('US-', '');
+            // Strip country prefix from ISO code (e.g., "US-NY" → "NY", "AU-VIC" → "VIC")
+            stateCode = item.address.ISO3166_2_lvl4.replace(/^[A-Z]{2}-/, '');
         }
 
         setFormData(prev => ({
@@ -115,7 +119,8 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
             lat: item.lat,
             lng: item.lon,
             city: item.address.city || item.address.town || item.address.village || '',
-            state: stateCode
+            state: stateCode,
+            country: item.address.country || prev.country
         }));
         setQuery(item.display_name);
         setShowSuggestions(false);
@@ -136,6 +141,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         try {
             // If user typed in the search box but didn't select from dropdown,
@@ -148,9 +154,8 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
 
             if ((lat === 0 && lng === 0) && finalAddress.length > 2) {
                 try {
-                    const countryCode = formData.country.toLowerCase() === 'canada' ? 'ca' : 'us';
                     const geoRes = await fetch(
-                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalAddress)}&limit=1&countrycodes=${countryCode}`,
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(finalAddress)}&limit=1`,
                         { headers: { 'User-Agent': 'LaborLandmarksApp/1.0' } }
                     );
                     const geoData = await geoRes.json();
@@ -197,6 +202,8 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
         } catch (error) {
             console.error('Error sending suggestion:', error);
             alert('Error sending suggestion.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -297,7 +304,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">State (Auto)</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">State/Province (Auto)</label>
                                 <input
                                     required
                                     type="text"
@@ -393,16 +400,15 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Country</label>
-                                    <select
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Country (Auto)</label>
+                                    <input
                                         required
+                                        type="text"
                                         value={formData.country}
                                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                        className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 appearance-none"
-                                    >
-                                        <option value="USA">USA</option>
-                                        <option value="Canada">Canada</option>
-                                    </select>
+                                        className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-600/50"
+                                        placeholder="e.g. USA, Australia, Canada"
+                                    />
                                 </div>
                             </div>
 
@@ -434,11 +440,12 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Comments on this Submission</label>
+                                    <p className="text-xs text-yellow-400 font-semibold mb-2">Know the exact spot? Include details like "Section K, Row 12 of Mt. Hope Cemetery" or "plaque on the south wall of the main entrance." You can also paste GPS coordinates (lat/lng) if you have them.</p>
                                     <textarea
                                         value={formData.submitterComment}
                                         onChange={e => setFormData({ ...formData, submitterComment: e.target.value })}
                                         className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white min-h-[80px] focus:outline-none focus:ring-2 focus:ring-red-600/50"
-                                        placeholder="Any additional notes for the reviewer..."
+                                        placeholder="Any additional notes, precise location details, or coordinates..."
                                     />
                                 </div>
                             </div>
@@ -454,10 +461,11 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95"
+                                disabled={isSubmitting}
+                                className={`flex items-center gap-2 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg ${isSubmitting ? 'bg-red-800 cursor-not-allowed opacity-70' : 'bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95'}`}
                             >
-                                <Save size={18} />
-                                Submit Suggestion
+                                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                                {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
                             </button>
                         </div>
                     </form>
