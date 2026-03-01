@@ -13,6 +13,16 @@
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);

@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Landmark } from './LandmarkCard';
 import LandmarkCard from './LandmarkCard';
-import { AnimatePresence, motion } from 'framer-motion';
 
 interface ListViewProps {
     landmarks: Landmark[];
@@ -17,20 +16,17 @@ const ListView: React.FC<ListViewProps> = ({ landmarks, onSelectLandmark }) => {
                     <p className="text-sm">Try adjusting your filters or search terms</p>
                 </div>
             ) : (
-                <motion.div
-                    layout
+                <div
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                 >
-                    <AnimatePresence mode="popLayout">
-                        {landmarks.map((landmark) => (
-                            <LandmarkCard
-                                key={landmark.id}
-                                landmark={landmark}
-                                onClick={() => onSelectLandmark(landmark)}
-                            />
-                        ))}
-                    </AnimatePresence>
-                </motion.div>
+                    {landmarks.map((landmark) => (
+                        <LandmarkCard
+                            key={landmark.id}
+                            landmark={landmark}
+                            onClick={() => onSelectLandmark(landmark)}
+                        />
+                    ))}
+                </div>
             )}
         </div>
     );

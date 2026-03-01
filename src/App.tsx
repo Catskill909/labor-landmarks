@@ -74,7 +74,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-black text-white px-6">
+      <div className="h-dvh flex items-center justify-center bg-black text-white px-6">
         <div className="flex flex-col items-center gap-6">
           <div className="relative">
             <div className="w-16 h-16 rounded-full border-4 border-white/5 border-t-red-600 animate-spin"></div>
@@ -95,7 +95,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={
-          <div className="h-screen flex flex-col overflow-hidden bg-black text-white">
+          <div className="h-dvh flex flex-col overflow-hidden bg-black text-white">
             <Header
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
