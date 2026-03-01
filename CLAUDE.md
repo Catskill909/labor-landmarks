@@ -25,6 +25,7 @@
 ### 4. Dockerfile & Coolify Volumes
 - Do NOT put secrets (like `ADMIN_PASSWORD`) in `ARG` or `ENV` — use Coolify environment variables instead
 - The `# check-ignore=critical_high_vulnerabilities` comments suppress Docker DX VSCode warnings for `node:22-alpine` base image CVEs — these are informational, not build errors
+- **NEVER add `apk add` to the Dockerfile** — Alpine CDN (`dl-cdn.alpinelinux.org`) has intermittent DNS outages that will fail builds. Use built-in Alpine tools (e.g., `wget` instead of `curl`) or npm packages instead. (Learned: Mar 2026, two consecutive deploy failures from `apk add --no-cache curl`)
 - **CRITICAL: Coolify MUST have TWO persistent storage volumes configured:**
   - `/app/data` — SQLite database. Without this, ALL landmarks are wiped on every deploy.
   - `/app/uploads` — Uploaded images. Without this, all images are lost on every deploy.
@@ -40,6 +41,12 @@
 - These are **never** exposed in the public API (`GET /api/landmarks`) — stripped server-side
 - They **are** returned by the admin API (`GET /api/admin/landmarks`) and admin backup
 - In the Admin Dashboard, a purple UserCheck icon appears when submitter info exists — click to view
+
+### 7. Framer Motion — Use Sparingly on Lists
+- **NEVER** use `layout`, `AnimatePresence`, `initial`, `animate`, or `exit` on components rendered in lists with 100+ items
+- This creates one GPU compositing layer per item, which crashes mobile browsers (~300-500MB memory limit)
+- `LandmarkCard` uses CSS `hover:-translate-y-1 transition-all` instead — same visual effect, zero JS overhead
+- Framer Motion is fine for single elements like `DetailModal` or `ImageLightbox`
 
 ## Architecture Quick Reference
 - **Frontend:** React + Vite (builds to `dist/`)

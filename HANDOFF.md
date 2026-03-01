@@ -100,6 +100,8 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 | 🔴 NEVER manually edit .db files | Use Admin Dashboard or Prisma Studio |
 | 🔴 NEVER confuse localhost with production URL | Check the URL bar before every action |
 | 🔴 NEVER deploy without verifying BOTH Coolify volumes exist | Without `/app/data` volume, DB is wiped every deploy |
+| 🔴 NEVER add `apk add` to Dockerfile | Alpine CDN has DNS outages — use built-in tools or npm packages |
+| 🔴 NEVER use framer-motion `layout`/`AnimatePresence` on lists with 100+ items | Crashes mobile browsers (see Phase 9) |
 | 🟢 ALWAYS ask user which environment they mean | "Local or production?" |
 | 🟢 ALWAYS backup production before importing | Click Backup JSON first |
 | 🟢 ALWAYS verify record counts after sync | Compare local vs production counts |
@@ -129,6 +131,14 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 ### Pitfall 5: "I ran a fix script but production didn't change"
 **CAUSE:** Scripts run against LOCAL database only  
 **FIX:** After running script locally, sync to production via Admin
+
+### Pitfall 6: "Deploy failed — apk add curl: DNS transient error"
+**CAUSE:** Alpine Linux CDN (`dl-cdn.alpinelinux.org`) has intermittent DNS outages. The `--no-cache` flag means `apk` re-downloads on every build, so any CDN hiccup kills the deploy.  
+**FIX (PERMANENT):** Removed `RUN apk add --no-cache curl` from the Dockerfile (Mar 2026). Alpine includes `wget` natively. Never add `apk add` back — use npm packages or built-in Alpine tools instead.
+
+### Pitfall 7: "List view crashes / 'Can't open this page' on mobile"
+**CAUSE:** Framer Motion `layout` + `AnimatePresence mode="popLayout"` on 336 `LandmarkCard` components creates 336 simultaneous GPU-composited animation layers, exceeding mobile browser memory (~300-500MB).  
+**FIX (PERMANENT):** Removed per-card framer-motion animations (Mar 2026). Cards now use CSS `hover:-translate-y-1` for hover effects. DetailModal still uses framer-motion (1 element at a time = fine).
 
 ---
 
@@ -275,7 +285,21 @@ All changes implemented locally, build passes (`tsc --noEmit` clean), **NOT YET 
 - [x] **dev.sh** (NEW): Startup script that force-kills processes on ports 3001/5173/5174, verifies ports free, runs prisma generate, starts both servers with trap for clean Ctrl+C
 - [x] **package.json**: `"dev:fullstack": "./dev.sh"`
 
-### Phase 8: Future Enhancements (Recommended Next)
+### Phase 9: Mobile Crash Fix & Dockerfile Hardening (Completed — Mar 2026)
+
+#### 9A. Mobile List View Crash Fix (Done)
+- [x] **Root cause**: 336 `LandmarkCard` components each with framer-motion `layout`, `initial`, `animate`, `exit`, `whileHover` props rendered simultaneously when switching to list view. This created 336 GPU-composited animation layers + ~5,000 DOM nodes, exceeding mobile browser memory limits (~300-500MB) and crashing the Chrome/Safari renderer process.
+- [x] **`LandmarkCard.tsx`**: Replaced `motion.div` with plain `div`, added CSS `hover:-translate-y-1 transition-all` for hover lift effect.
+- [x] **`ListView.tsx`**: Removed `AnimatePresence mode="popLayout"` and `motion.div layout`, replaced with plain `div` grid.
+- [x] **`App.css`**: Removed leftover Vite scaffold styles (`#root { max-width: 1280px; padding: 2rem; }`) that squeezed mobile layout.
+- [x] **`index.css`**: Added missing `.no-scrollbar` CSS utility (was referenced in 4 places but never defined).
+- [x] **`App.tsx`**: Changed `h-screen` → `h-dvh` on loading + main containers (fixes mobile address bar viewport height).
+
+#### 9B. Dockerfile Hardening (Done)
+- [x] **Removed `RUN apk add --no-cache curl`**: Alpine CDN DNS outage caused two consecutive deployment failures. `curl` was only installed "in case" for healthchecks that were never configured. Alpine includes `wget` natively.
+- [x] **Result**: Dockerfile no longer depends on external package registries during build (only npm and Docker Hub, which are far more reliable).
+
+### Phase 10: Future Enhancements (Recommended Next)
 - [ ] **Email Notifications**: Resend (recommended) or Nodemailer for new suggestion alerts
 - [ ] **Authentication**: Secure `/admin` route with password protection
 - [ ] **Image reordering**: Drag-to-reorder images in admin modal (sortOrder)
@@ -347,28 +371,24 @@ When picking up from this document, future AI agents should:
 
 ---
 
-## CURRENT STATE (Feb 9, 2026) — READ THIS FIRST IN NEXT SESSION
+## CURRENT STATE (Mar 1, 2026) — READ THIS FIRST IN NEXT SESSION
 
-### Git Status: ALL CHANGES UNCOMMITTED
-Everything from Phase 7 is implemented and working locally but **nothing has been committed or pushed yet**.
+### Git Status: ALL COMMITTED AND DEPLOYED
+Phase 9 (mobile crash fix + Dockerfile hardening) is deployed and live on production.
 
-Modified files:
-- `Dockerfile`, `package.json`, `package-lock.json`, `prisma/schema.prisma`
-- `server/index.ts`, `src/App.tsx`, `src/components/AboutModal.tsx`
-- `src/components/DetailModal.tsx`, `src/components/Header.tsx`
-- `src/components/LandmarkCard.tsx`, `src/components/LandmarkModal.tsx`
-- `src/components/SuggestionModal.tsx`, `src/components/MapView.tsx`
+### Production Stats
+- **336 landmarks** with **256 images** live at `labor-landmarks.supersoul.top`
+- **409KB** JSON API payload at `/api/landmarks`
 
-New files:
-- `app-updates.md` — detailed implementation plan for Phase 7
-- `dev.sh` — dev server startup script
-- `prisma/migrations/20260210000727_add_landmark_images/` — migration
-- `src/components/ImageLightbox.tsx` — lightbox component
-- `src/components/ImageUploader.tsx` — drag-and-drop upload component
+### Recent Fixes (Phase 9, Mar 2026)
+- **Mobile crash fixed**: Removed framer-motion per-card animations that were crashing mobile Chrome/Safari by creating 336 GPU layers
+- **Dockerfile hardened**: Removed `apk add curl` that was failing due to Alpine CDN DNS outages
+- **CSS cleanup**: Removed dead Vite scaffold `App.css`, added missing `no-scrollbar` utility, fixed `h-screen` → `h-dvh`
 
 ### Build Status: CLEAN
 - `npx tsc --noEmit` passes with zero errors
-- Local dev server runs and serves 273 landmarks
+- `npm run build` succeeds locally
+- Coolify auto-deploy succeeds
 
 ### Image System Architecture (No base64 — real files)
 Images are stored as real files on disk, NOT base64 in the database:
@@ -378,13 +398,6 @@ Images are stored as real files on disk, NOT base64 in the database:
 4. **Serving**: `express.static` serves `/uploads/` directory as static files
 5. **Display**: Frontend references `/uploads/landmarks/thumb_filename.jpg` for thumbnails, full filename for lightbox
 6. **Cleanup**: `onDelete: Cascade` removes DB records; DELETE endpoint also removes files from disk
-
-### What Needs To Happen Next
-1. **COMMIT** all changes (build is clean, ready to commit)
-2. **TEST** image upload locally — upload some test images via admin and suggestion form (already tested and working)
-3. **PUSH** to main → Coolify auto-deploys
-4. **COOLIFY CONFIG**: Add persistent storage volume in Coolify: mount point `/app/uploads` — without this, uploaded images will be lost on every redeploy
-5. **PRODUCTION DATA SYNC**: After deploy, use Admin Import/Export to sync data if needed
 
 ### z-index Layering Reference
 ```
@@ -405,3 +418,4 @@ Express 5 types `req.params` values as `string | string[]`. All route handlers u
 ## Brainstorming Ideas
 - **Museum Integration**: Allow landmarks to be linked to existing museum collections.
 - **Map Interaction**: Long-press on the map to "Quick-Add" a landmark at those coordinates.
+
