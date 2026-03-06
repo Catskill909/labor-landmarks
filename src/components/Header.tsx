@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Landmark, Search, X, Plus, Menu, Building2, Info, ExternalLink } from 'lucide-react';
+import { Landmark, Search, X, Plus, Menu, Building2, Info, Shield, Database, ExternalLink } from 'lucide-react';
 import SuggestionModal from './SuggestionModal';
 import AboutModal from './AboutModal';
+import PrivacyModal from './PrivacyModal';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface HeaderProps {
@@ -16,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({
     const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAboutOpen, setIsAboutOpen] = useState(false);
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
     // Close menu when clicking outside
     const menuRef = useRef<HTMLDivElement>(null);
@@ -39,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
                         <Landmark className="text-white w-5 h-5" />
                     </div>
                     <div className="hidden sm:block">
-                        <h1 className="text-lg font-bold tracking-tight text-white leading-none">Labor Landmarks</h1>
+                        <h1 className="text-lg font-bold tracking-tight text-white leading-none">LHF Labor Landmarks</h1>
                         <p className="text-[10px] text-gray-400 mt-0.5 uppercase tracking-widest font-medium">American History</p>
                     </div>
                 </div>
@@ -110,6 +112,20 @@ const Header: React.FC<HeaderProps> = ({
                                         <ExternalLink size={12} className="ml-auto text-gray-600 group-hover:text-gray-400" />
                                     </a>
 
+                                    <a
+                                        href="https://labor-database.supersoul.top/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-gray-200 transition-colors group"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <div className="p-1.5 bg-orange-500/10 rounded-md text-orange-400 group-hover:bg-orange-500/20 transition-colors">
+                                            <Database size={16} />
+                                        </div>
+                                        <span>LHF Labor Arts & Culture Database</span>
+                                        <ExternalLink size={12} className="ml-auto text-gray-600 group-hover:text-gray-400" />
+                                    </a>
+
                                     <button
                                         onClick={() => {
                                             setIsMenuOpen(false);
@@ -121,6 +137,19 @@ const Header: React.FC<HeaderProps> = ({
                                             <Info size={16} />
                                         </div>
                                         <span>About Labor Landmarks</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            setIsPrivacyOpen(true);
+                                        }}
+                                        className="w-full text-left px-4 py-3 hover:bg-zinc-800 flex items-center gap-3 text-sm text-gray-200 transition-colors group"
+                                    >
+                                        <div className="p-1.5 bg-purple-500/10 rounded-md text-purple-400 group-hover:bg-purple-500/20 transition-colors">
+                                            <Shield size={16} />
+                                        </div>
+                                        <span>Privacy Policy</span>
                                     </button>
 
                                     {/* Mobile Only: Suggest Site */}
@@ -146,6 +175,7 @@ const Header: React.FC<HeaderProps> = ({
 
                 <SuggestionModal isOpen={isSuggestionOpen} onClose={() => setIsSuggestionOpen(false)} />
                 <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+                <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
             </header>
         </>
     );

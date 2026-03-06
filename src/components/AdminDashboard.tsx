@@ -221,7 +221,7 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
-                                <p className="text-sm text-gray-500">Manage Labor Landmarks Inventory</p>
+                                <p className="text-sm text-gray-500">Manage LHF Labor Landmarks Inventory</p>
                             </div>
                         </div>
                     </div>

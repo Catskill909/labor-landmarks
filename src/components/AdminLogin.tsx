@@ -54,7 +54,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                             <Lock className="w-8 h-8 text-red-600" />
                         </div>
                         <h1 className="text-3xl font-bold tracking-tight text-white">Admin Access</h1>
-                        <p className="text-gray-500 text-sm font-medium">Labor Landmarks Registry</p>
+                        <p className="text-gray-500 text-sm font-medium">LHF Labor Landmarks Registry</p>
                     </div>
 
                     <div className="glass border border-white/10 rounded-3xl p-8 shadow-2xl space-y-6 relative overflow-hidden">
