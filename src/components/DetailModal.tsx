@@ -238,7 +238,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                             <Info size={18} />
                                             Historical Significance
                                         </div>
-                                        <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                                        <p className="text-gray-300 text-lg leading-relaxed mb-8 whitespace-pre-line">
                                             {landmark.description}
                                         </p>
 
