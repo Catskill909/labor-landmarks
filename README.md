@@ -12,7 +12,7 @@ A professional, full-stack interactive map application designed to explore, visu
     - Image Gallery with lightbox viewer
     - Interactive Mini-map (leaflet-based)
 - **International Support**: Full support for landmarks outside the USA (Europe, Australia, etc.).
-- **Smart Search**: Real-time filtering by Name, City, State, or Country.
+- **Smart Search**: Real-time filtering by Name, City, State (abbreviation or full name), and Description. Multi-word queries use AND logic — "Bloomington Illinois" returns landmarks matching both terms across any field.
 - **Category Filtering**: Quickly drill down by types like "Strike/Event", "Monument", "Union Hall", "Museum", etc.
 
 ### 📸 Image Gallery System

@@ -299,7 +299,24 @@ All changes implemented locally, build passes (`tsc --noEmit` clean), **NOT YET 
 - [x] **Removed `RUN apk add --no-cache curl`**: Alpine CDN DNS outage caused two consecutive deployment failures. `curl` was only installed "in case" for healthchecks that were never configured. Alpine includes `wget` natively.
 - [x] **Result**: Dockerfile no longer depends on external package registries during build (only npm and Docker Hub, which are far more reliable).
 
-### Phase 10: Future Enhancements (Recommended Next)
+### Phase 10: Search Overhaul (Completed — Apr 2026)
+
+Prompted by feedback from Saul Schniderman (LHF co-founder, former Library of Congress cataloger).
+
+**Bug fixed**: Searching "Bloomington Illinois" returned 0 results; "Bloomington" returned 3. Root cause: the entire query was treated as a single substring that had to appear in one field — no multi-word support.
+
+**Changes (`src/App.tsx`, `src/components/AdminDashboard.tsx`):**
+- [x] **Multi-word AND logic**: Query is split on whitespace; every word must match (in any field) — "Bloomington Illinois" → ["bloomington", "illinois"] → both must match across name/city/state/description
+- [x] **State full-name mapping**: "Illinois" now matches landmarks with state "IL" (and vice versa) via a complete US state abbreviation ↔ full-name lookup table
+- [x] **Punctuation normalization**: Apostrophes and hyphens stripped before matching — "Workers Memorial" matches "Workers' Memorial"
+- [x] **Whitespace trim**: Leading/trailing spaces stripped before processing
+- [x] **Description field added**: Landmark description is now included in the search target (was previously ignored)
+
+**What is NOT changed**: category filter (separate system), database schema, server-side API (search remains client-side)
+
+**Audit doc**: `search-queries.md` — full bug inventory and plan (generated Apr 2026)
+
+### Phase 11: Future Enhancements (Recommended Next)
 - [ ] **Email Notifications**: Resend (recommended) or Nodemailer for new suggestion alerts
 - [ ] **Authentication**: Secure `/admin` route with password protection
 - [ ] **Image reordering**: Drag-to-reorder images in admin modal (sortOrder)
@@ -371,14 +388,18 @@ When picking up from this document, future AI agents should:
 
 ---
 
-## CURRENT STATE (Mar 1, 2026) — READ THIS FIRST IN NEXT SESSION
+## CURRENT STATE (Apr 3, 2026) — READ THIS FIRST IN NEXT SESSION
 
-### Git Status: ALL COMMITTED AND DEPLOYED
-Phase 9 (mobile crash fix + Dockerfile hardening) is deployed and live on production.
+### Git Status: SEARCH FIX READY TO COMMIT/PUSH
+Phase 10 (search overhaul) is implemented and `tsc --noEmit` is clean. Not yet pushed to production.
 
-### Production Stats
+### Production Stats (as of Mar 2026)
 - **336 landmarks** with **256 images** live at `labor-landmarks.supersoul.top`
 - **409KB** JSON API payload at `/api/landmarks`
+
+### Recent Fixes (Phase 10, Apr 2026)
+- **Search overhauled**: Multi-word AND logic, state full-name mapping, punctuation normalization, description field added — fixes "Bloomington Illinois" returning 0 results
+- See `search-queries.md` for full audit and `HANDOFF.md` Phase 10 for change details
 
 ### Recent Fixes (Phase 9, Mar 2026)
 - **Mobile crash fixed**: Removed framer-motion per-card animations that were crashing mobile Chrome/Safari by creating 336 GPU layers
@@ -388,7 +409,6 @@ Phase 9 (mobile crash fix + Dockerfile hardening) is deployed and live on produc
 ### Build Status: CLEAN
 - `npx tsc --noEmit` passes with zero errors
 - `npm run build` succeeds locally
-- Coolify auto-deploy succeeds
 
 ### Image System Architecture (No base64 — real files)
 Images are stored as real files on disk, NOT base64 in the database:

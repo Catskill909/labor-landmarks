@@ -8,6 +8,22 @@ import DetailModal from './DetailModal';
 import FeedModal from './FeedModal';
 import SubmitterInfoModal from './SubmitterInfoModal';
 
+const STATE_FULL_NAMES: Record<string, string> = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',
+  HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',
+  KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',
+  MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',
+  NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',
+  NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',
+  OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',
+  SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',
+  VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',
+  DC:'District of Columbia',
+};
+
+const normalizeSearch = (s: string) => s.toLowerCase().replace(/['-]/g, '');
+
 // Helper for authenticated admin API calls
 const adminFetch = (url: string, options: RequestInit = {}) => {
     const token = sessionStorage.getItem('adminToken');
@@ -63,14 +79,20 @@ const AdminDashboard: React.FC = () => {
         fetchAdminLandmarks();
     }, []);
 
+    const words = normalizeSearch(searchQuery.trim()).split(/\s+/).filter(Boolean);
     const filteredLandmarks = landmarks.filter(l => {
-        const matchesSearch = l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            l.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            l.state.toLowerCase().includes(searchQuery.toLowerCase());
-
         const isPublished = l.isPublished ?? true;
         const matchesStatus = filterStatus === 'published' ? isPublished : !isPublished;
-
+        if (words.length === 0) return matchesStatus;
+        const fullStateName = STATE_FULL_NAMES[l.state.toUpperCase()] ?? '';
+        const searchFields = [
+            normalizeSearch(l.name),
+            normalizeSearch(l.city),
+            normalizeSearch(l.state),
+            normalizeSearch(fullStateName),
+            normalizeSearch(l.address ?? ''),
+        ].join(' ');
+        const matchesSearch = words.every(w => searchFields.includes(w));
         return matchesSearch && matchesStatus;
     });
 

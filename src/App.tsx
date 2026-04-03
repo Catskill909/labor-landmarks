@@ -11,6 +11,22 @@ import AdminDashboard from './components/AdminDashboard';
 import type { Landmark } from './components/LandmarkCard';
 import { CATEGORIES } from './constants/categories';
 
+const STATE_FULL_NAMES: Record<string, string> = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',
+  HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',
+  KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',
+  MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',
+  NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',
+  NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',
+  OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',
+  SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',
+  VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',
+  DC:'District of Columbia',
+};
+
+const normalize = (s: string) => s.toLowerCase().replace(/['-]/g, '');
+
 function App() {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,13 +57,20 @@ function App() {
   const categories = CATEGORIES;
 
   const filteredLandmarks = useMemo(() => {
+    const words = normalize(searchQuery.trim()).split(/\s+/).filter(Boolean);
     return landmarks.filter(l => {
-      const query = searchQuery.toLowerCase();
-      const nameMatch = l.name.toLowerCase().includes(query);
-      const cityMatch = l.city.toLowerCase().includes(query);
-      const stateMatch = l.state.toLowerCase().includes(query);
       const categoryMatch = selectedCategory === '' || l.category.includes(selectedCategory);
-      return (nameMatch || cityMatch || stateMatch) && categoryMatch;
+      if (words.length === 0) return categoryMatch;
+      const fullStateName = STATE_FULL_NAMES[l.state.toUpperCase()] ?? '';
+      const searchFields = [
+        normalize(l.name),
+        normalize(l.city),
+        normalize(l.state),
+        normalize(fullStateName),
+        normalize(l.description ?? ''),
+        normalize(l.address ?? ''),
+      ].join(' ');
+      return words.every(w => searchFields.includes(w)) && categoryMatch;
     });
   }, [landmarks, searchQuery, selectedCategory]);
 
