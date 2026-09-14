@@ -2,6 +2,30 @@
 
 ---
 
+## 🔴 FRONT BURNER (13 Sep 2026) — some readers get ERR_SSL_PROTOCOL_ERROR
+
+Chris Garlock can't open this site (or labor-database) from one home network in
+Rochester; a second newsletter reader reports the same. **The server is not at
+fault** — verified from 34 home-network probes including Spectrum in Rochester.
+Leading explanation, unproven: a home-router security filter (likely Spectrum
+Security Shield) scoring `supersoul.top` as risky.
+
+**Full investigation, action tracker and next steps:** `network-error.md` in the
+*labor-database* working copy (`~/Desktop/labor-database/`), local-only and
+gitignored. **Do not change DNS or Coolify for this without reading it first.**
+
+---
+
+## 📦 Pending: Map Data Import (added 13 Sep 2026)
+
+- **Data Location**: `map_data/landmarks.json` and `map_data/high_res_images/`
+- **Context**: We successfully extracted the original landmark descriptions and coordinates from a Google Map KML file.
+- **Images**: Google User Content thumbnails were discarded. Instead, we extracted the original high-resolution URLs (mostly from Rochester Public Library). We updated the outdated `rochester.lib.ny.us` domains to `libraryweb.org` and downloaded 47 high-res images.
+- **Action Required**: The developer needs to script the insertion of this data into the app's backend. Since the high-res images are now local, it is recommended to host them in the app's own storage (e.g. S3) during import to prevent future broken links.
+- **Production data rule still applies:** importing locally does not reach production — use Admin Import (see below).
+
+---
+
 ## 🚨🚨🚨 STOP AND READ THIS FIRST 🚨🚨🚨
 
 > **Every AI session MUST read this section before doing ANYTHING.**  

@@ -1,0 +1,542 @@
+[
+  {
+    "name": "Catholic Worker House",
+    "coordinates": {
+      "longitude": -77.605582,
+      "latitude": 43.146407
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Emma Goldman Residence",
+    "coordinates": {
+      "longitude": -77.606477,
+      "latitude": 43.167396
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Frederick Douglass Gravesite",
+    "coordinates": {
+      "longitude": -77.614522,
+      "latitude": 43.13067
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Labor News",
+    "coordinates": {
+      "longitude": -77.611406,
+      "latitude": 43.155961
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Lewis Henry Morgan Gravesite",
+    "coordinates": {
+      "longitude": -77.614637,
+      "latitude": 43.133208
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Metro Justice",
+    "coordinates": {
+      "longitude": -77.650121,
+      "latitude": 43.135968
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Susan B. Anthony House",
+    "coordinates": {
+      "longitude": -77.628125,
+      "latitude": 43.1533
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "The North Star",
+    "coordinates": {
+      "longitude": -77.611771,
+      "latitude": 43.155607
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "The Rochester Socialist",
+    "coordinates": {
+      "longitude": -77.613308,
+      "latitude": 43.156592
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Women's Educational and Industrial Union",
+    "coordinates": {
+      "longitude": -77.612357,
+      "latitude": 43.155626
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Flour Milling (Phoenix Mill)",
+    "coordinates": {
+      "longitude": -77.617074,
+      "latitude": 43.161583
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Mercury Statue",
+    "coordinates": {
+      "longitude": -77.610543,
+      "latitude": 43.1548
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "George Eastman House",
+    "coordinates": {
+      "longitude": -77.580017,
+      "latitude": 43.152852
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Labor Lyceum Program",
+    "coordinates": {
+      "longitude": -77.612969,
+      "latitude": 43.154301
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Mechanics Institute",
+    "coordinates": {
+      "longitude": -77.615828,
+      "latitude": 43.1531
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Public Library",
+    "coordinates": {
+      "longitude": -77.608209,
+      "latitude": 43.154095
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Rochester Labor Studies Program",
+    "coordinates": {
+      "longitude": -77.607508,
+      "latitude": 43.128872
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Rush Rhees Library",
+    "coordinates": {
+      "longitude": -77.628031,
+      "latitude": 43.128941
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Factory Fire",
+    "coordinates": {
+      "longitude": -77.623154,
+      "latitude": 43.124877
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Firefighters Memorial",
+    "coordinates": {
+      "longitude": -77.623154,
+      "latitude": 43.124877
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Ida Breiman Gravesite",
+    "coordinates": {
+      "longitude": -77.628768,
+      "latitude": 43.231342
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Susan B. Anthony Gravesite",
+    "coordinates": {
+      "longitude": -77.615404,
+      "latitude": 43.133515
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Workers Memorial",
+    "coordinates": {
+      "longitude": -77.6089,
+      "latitude": 43.129374
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Chamber of Commerce",
+    "coordinates": {
+      "longitude": -77.609793,
+      "latitude": 43.157888
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Clothing Workers (Keller-Heumann-Thompson)",
+    "coordinates": {
+      "longitude": -77.615028,
+      "latitude": 43.185497
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Eastman Kodak Company",
+    "coordinates": {
+      "longitude": -77.619636,
+      "latitude": 43.160941
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Electronics Workers",
+    "coordinates": {
+      "longitude": -77.635978,
+      "latitude": 43.16431
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Garment District",
+    "coordinates": {
+      "longitude": -77.609975,
+      "latitude": 43.159664
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Liberty Pole",
+    "coordinates": {
+      "longitude": -77.604332,
+      "latitude": 43.157607
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Rochester Teachers",
+    "coordinates": {
+      "longitude": -77.615616,
+      "latitude": 43.153485
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Eastman Theater",
+    "coordinates": {
+      "longitude": -77.601279,
+      "latitude": 43.15829
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "General Strike",
+    "coordinates": {
+      "longitude": -77.636722,
+      "latitude": 43.170025
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Washington Square Park",
+    "coordinates": {
+      "longitude": -77.605498,
+      "latitude": 43.152785
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Gannett Newspapers",
+    "coordinates": {
+      "longitude": -77.612677,
+      "latitude": 43.154023
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Amalgamated Clothing Workers Hall",
+    "coordinates": {
+      "longitude": -77.609741,
+      "latitude": 43.166877
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Convention Hall",
+    "coordinates": {
+      "longitude": -77.605034,
+      "latitude": 43.152476
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Fitzhugh Hall",
+    "coordinates": {
+      "longitude": -77.613763,
+      "latitude": 43.154538
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Labor Temple",
+    "coordinates": {
+      "longitude": -77.615257,
+      "latitude": 43.156812
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "NYS United Teachers Building",
+    "coordinates": {
+      "longitude": -77.595657,
+      "latitude": 43.156739
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "New Osburn House",
+    "coordinates": {
+      "longitude": -77.608024,
+      "latitude": 43.154737
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Progressive Working People\u2019s Lyceum",
+    "coordinates": {
+      "longitude": -77.615662,
+      "latitude": 43.166625
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Shoemakers Hall",
+    "coordinates": {
+      "longitude": -77.614207,
+      "latitude": 43.158185
+    },
+    "description": "At this site, in the center of the shoe manufacturing district known as the \"leather swamp,\" stood Shoemakers Hall. The Central Trades and Labor Council met here in 1904-05, as did Machinists Local 93. In February 1901, Samuel Gompers, President of the American Federation of Labor, spoke to a mass meeting at the hall under the auspices of the Council and the machinists. Not only did he press for the eight-hour day for Rochester's clothing and shoe workers, but he urged the organizing of workers in the Eastman and Brownell Kodak factories.",
+    "image_urls": []
+  },
+  {
+    "name": "UNITE-HERE Headquarters",
+    "coordinates": {
+      "longitude": -77.581158,
+      "latitude": 43.14709
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "United Auto Workers Hall",
+    "coordinates": {
+      "longitude": -77.635789,
+      "latitude": 43.168503
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Baden Street Settlement House",
+    "coordinates": {
+      "longitude": -77.606469,
+      "latitude": 43.168592
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Building Trades Council",
+    "coordinates": {
+      "longitude": -77.611577,
+      "latitude": 43.160019
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Knights of St. Crispin Hall",
+    "coordinates": {
+      "longitude": -77.616689,
+      "latitude": 43.154759
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Rochester Central Trades and Labor Council",
+    "coordinates": {
+      "longitude": -77.611964,
+      "latitude": 43.155838
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "United Labor Chest",
+    "coordinates": {
+      "longitude": -77.610993,
+      "latitude": 43.156064
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Carpenters Hall",
+    "coordinates": {
+      "longitude": -77.616134,
+      "latitude": 43.157238
+    },
+    "description": "This was, from 1842 to 1859, the site of the Unitarian Church at which the second Women\u2019s Rights Convention was held on August 2, 1848. The Unitarian Church was destroyed by fire and St. Paul's German Evangelical Church was erected here in the 1860s. The United Shoe Workers Union bought the property in 1919; the Shoe Workers\u2019 Joint Council #6 and six affiliated locals held their meetings here for several years. When the Carpenters District Council acquired the building around 1932, the Central Trades and Labor Council took up headquarters here along with the barbers, electrical workers, laborers, operating engineers, and plumbers & steamfitters. In May, 1946 hundreds of angry city workers jammed Carpenters Hall before parading to City Hall to protest the discharge of 489 Department of Public Works' employees who had recently joined the American Federation of State, County, and Municipal Employees; a city-wide general strike followed soon thereafter.",
+    "image_urls": []
+  },
+  {
+    "name": "Clothing Workers (Hickey-Freeman)",
+    "coordinates": {
+      "longitude": -77.614931,
+      "latitude": 43.179795
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Clothing Workers (Michaels-Stern)",
+    "coordinates": {
+      "longitude": -77.607695,
+      "latitude": 43.158845
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Erie Canal Viaduct",
+    "coordinates": {
+      "longitude": -77.609546,
+      "latitude": 43.154565
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Kimball's Tobacco Factory",
+    "coordinates": {
+      "longitude": -77.611198,
+      "latitude": 43.15336
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Lehigh Valley Railroad Station",
+    "coordinates": {
+      "longitude": -77.608153,
+      "latitude": 43.153606
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Nursery Workers",
+    "coordinates": {
+      "longitude": -77.614206,
+      "latitude": 43.137143
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Rochester Bicycle Workers Union",
+    "coordinates": {
+      "longitude": -77.615397,
+      "latitude": 43.152999
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Rochester Button Company",
+    "coordinates": {
+      "longitude": -77.617722,
+      "latitude": 43.160607
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Shoe Factory",
+    "coordinates": {
+      "longitude": -77.616014,
+      "latitude": 43.160762
+    },
+    "description": "",
+    "image_urls": []
+  },
+  {
+    "name": "Shoe Workers (E. P. Reed)",
+    "coordinates": {
+      "longitude": -77.584626,
+      "latitude": 43.158177
+    },
+    "description": "",
+    "image_urls": []
+  }
+]

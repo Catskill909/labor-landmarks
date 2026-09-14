@@ -89,4 +89,9 @@ PROD:   Admin → "Import JSON" → upload that file
 - `/scripts`: Recovery and automation utilities:
     - `fix_international_data.ts`: Repairs geocoding and metadata for international sites.
     - `recover_categories.ts`: Audits and restores landmark categories from description text.
+- `/map_data`: Landmark data scraped from the original Google Maps KML (pending import — see below).
+
+## Map Data Import (Pending)
+A structured `landmarks.json` and its associated high-resolution images have been placed in the `map_data/` folder. This data was extracted from the original Google Maps KML file, and the broken library image links have been corrected.
+**Next Steps**: Write an import script to upload these images to storage and populate the database with the landmarks.
 
