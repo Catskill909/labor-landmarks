@@ -101,3 +101,18 @@ server — the script creates and deletes rows:
 2. No secrets in Dockerfile ARG/ENV
 3. `npm run build` succeeds locally
 4. `npm test` and `npm run check:security` pass
+
+## Dependency security (updated 25 Oct 2026)
+- 25 Oct 2026: in-range `npm audit fix` + sharp 0.34 → 0.35.5 cleared 16 of 19 production advisories
+  (multer upload DoS bugs, Express internals, react-router, vite, and libvips/libheif/librsvg
+  image-decoder flaws in sharp — sharp decodes every public suggestion photo, so keep it current).
+- **3 remain, deliberately:** `prisma` / `@prisma/config` chain (deepmerge-ts, effect). They are in
+  Prisma's CLI, which only runs at container start and never sees visitor input. The fix is the
+  Prisma 6 → 7 major migration — its own project, not a routine update.
+- The critical `proxy-addr` advisory only affects apps trusting a proxy *subnet*; this app uses
+  `trust proxy 1`. Fixed anyway by the in-range update.
+- Newer local npm blocks install scripts (prisma, @prisma/engines). Run `npx prisma generate` after
+  installs. The Docker build (node:22-alpine, older npm) is unaffected.
+- No Docker on the dev Mac: sharp's Alpine binary can't be tested locally. The lockfile pins
+  `@img/sharp-linuxmusl-*`; if sharp ever fails to load in the container, the health check fails and
+  Coolify's rolling update keeps the old container running.
