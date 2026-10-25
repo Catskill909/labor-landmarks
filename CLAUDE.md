@@ -96,7 +96,11 @@ server — the script creates and deletes rows:
 - **Backend:** Express server at `server/index.ts`, runs via `tsx`
 - **Database:** SQLite via Prisma ORM
 - **Deployment:** Coolify, Docker build from `main` — **no auto-deploy**; press Deploy after pushing
-- **Port:** 3001 (standardized everywhere)
+- **Port:** 3001 locally and as the Dockerfile default. **Production runs on 3000**: Coolify's
+  configuration overrides the default (container log: `SERVER_v2_STARTED_ON_PORT_3000`).
+- **Coolify health check (set 25 Oct 2026):** HTTP GET `localhost:3000/api/health`, expect 200.
+  Port 3001 there fails every deploy (verified 25 Oct: rolled back). `/api/health` queries the
+  database, so a deploy with a broken DB is rejected and the old container keeps serving.
 
 ## Pre-Push Checklist
 1. `npx tsc --noEmit` passes with zero errors

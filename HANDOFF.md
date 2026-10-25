@@ -385,7 +385,7 @@ IF record has NO sourceUrl (manual entry):
 
 ### Critical Technical Configs (For Coolify/Docker)
 
-*   **Port 3001**: The application uses **Port 3001** consistently across local development and Docker. The `Dockerfile` sets `EXPOSE 3001` and `ENV PORT=3001`, matching `docker-compose.yml`. Ensure your deployment platform (Coolify, Railway, etc.) maps to port 3001.
+*   **Ports**: **3001** locally and as the Dockerfile default (`EXPOSE 3001`, `ENV PORT=3001`). **Production listens on 3000** — Coolify's configuration overrides the default. Coolify's health check must use **port 3000, path `/api/health`** (set 25 Oct 2026; port 3001 there fails every deploy).
 *   **API Security**: Every route that changes data, and every `/api/admin/*` route, requires `Authorization: Bearer <ADMIN_PASSWORD>` (sent by `src/utils/adminFetch.ts`). Public photo uploads use a one-time key instead. Full rules: CLAUDE.md §6b.
 *   **Health check**: `GET /api/health` → `{"status":"ok"}` (200) or 503 — it queries the database.
 *   **Database Migrations**:
@@ -441,8 +441,8 @@ with no blocked requests, photo upload + thumbnail work, rate limiter counts per
    **empty** site. Install Docker locally first (OrbStack or Docker Desktop) to test the real container.
 2. **Map data import** — see top of this file.
 3. **Prisma 6 → 7** — clears the last 3 npm advisories (CLI only, not reachable by visitors). Its own project.
-4. **Coolify health check** — a 25 Oct deploy log showed Coolify probing `localhost:3000`; the app
-   listens on **3001** with `GET /api/health`. Check Coolify → Health Checks uses port 3001.
+4. ~~Coolify health check~~ **Done 25 Oct:** set to `GET localhost:3000/api/health` and verified with a
+   successful deploy. (Production runs on 3000, not the code default 3001.)
 
 ### Checks before every push
 `npx tsc --noEmit` · `npm run build` · `npm test` · `npm run check:security` (CLAUDE.md Pre-Push Checklist)
