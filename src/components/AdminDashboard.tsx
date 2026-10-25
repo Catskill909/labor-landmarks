@@ -7,6 +7,7 @@ import ConfirmationModal from './ConfirmationModal.tsx';
 import DetailModal from './DetailModal';
 import FeedModal from './FeedModal';
 import SubmitterInfoModal from './SubmitterInfoModal';
+import { adminFetch } from '../utils/adminFetch';
 
 const STATE_FULL_NAMES: Record<string, string> = {
   AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
@@ -23,18 +24,6 @@ const STATE_FULL_NAMES: Record<string, string> = {
 };
 
 const normalizeSearch = (s: string) => s.toLowerCase().replace(/['-]/g, '');
-
-// Helper for authenticated admin API calls
-const adminFetch = (url: string, options: RequestInit = {}) => {
-    const token = sessionStorage.getItem('adminToken');
-    const headers: HeadersInit = {
-        ...options.headers,
-    };
-    if (token) {
-        (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-    }
-    return fetch(url, { ...options, headers });
-};
 
 // Admin Dashboard for managing landmarks
 const AdminDashboard: React.FC = () => {
@@ -114,7 +103,7 @@ const AdminDashboard: React.FC = () => {
         if (deleteId === null) return;
 
         try {
-            await fetch(`/api/landmarks/${deleteId}`, { method: 'DELETE' });
+            await adminFetch(`/api/landmarks/${deleteId}`, { method: 'DELETE' });
             fetchAdminLandmarks();
             setDeleteId(null);
         } catch (error) {
@@ -130,7 +119,7 @@ const AdminDashboard: React.FC = () => {
 
     const handleApprove = async (landmark: Landmark) => {
         try {
-            await fetch(`/api/landmarks/${landmark.id}`, {
+            await adminFetch(`/api/landmarks/${landmark.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...landmark, isPublished: true })

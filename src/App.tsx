@@ -10,6 +10,7 @@ import AboutModal from './components/AboutModal';
 import AdminDashboard from './components/AdminDashboard';
 import type { Landmark } from './components/LandmarkCard';
 import { CATEGORIES } from './constants/categories';
+import { ADMIN_LOGOUT_EVENT } from './utils/adminFetch';
 
 const STATE_FULL_NAMES: Record<string, string> = {
   AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
@@ -175,14 +176,19 @@ function App() {
 }
 
 function AdminRoute() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Local dev skips auth
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return true;
-    }
-    // Check session storage
-    return sessionStorage.getItem('isAdminAuthenticated') === 'true';
-  });
+  // Login is always required. (A localhost bypass used to live here; with the
+  // API now enforcing auth it rendered the dashboard with no token. Local dev
+  // still works: with ADMIN_PASSWORD unset the server accepts any login.)
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => sessionStorage.getItem('isAdminAuthenticated') === 'true' && !!sessionStorage.getItem('adminToken')
+  );
+
+  // adminFetch announces a rejected session; drop back to the login screen.
+  useEffect(() => {
+    const onLogout = () => setIsAuthenticated(false);
+    window.addEventListener(ADMIN_LOGOUT_EVENT, onLogout);
+    return () => window.removeEventListener(ADMIN_LOGOUT_EVENT, onLogout);
+  }, []);
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);

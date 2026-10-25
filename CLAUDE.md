@@ -52,6 +52,36 @@
 - These are **never** exposed in the public API (`GET /api/landmarks`) — stripped server-side
 - They **are** returned by the admin API (`GET /api/admin/landmarks`) and admin backup
 - In the Admin Dashboard, a purple UserCheck icon appears when submitter info exists — click to view
+- Every public response goes through `toPublicLandmark()` (`server/security.ts`) — including
+  `GET /api/landmarks/:id`, which until Oct 2026 returned them to anyone (and returned unpublished rows)
+
+### 6b. Auth on every write route — fixed 25 Oct 2026, keep it that way
+Until 25 Oct 2026, `PUT /api/landmarks/:id`, `DELETE /api/landmarks/:id` and
+`POST /api/landmarks/:id/images` had **no auth**: anyone could edit, delete or add photos to any
+landmark, and a public suggestion could publish itself (`isPublished:true` was honoured).
+
+**Rules:**
+- Any new route that changes data, or any `/api/admin/*` route, takes `adminAuth`.
+  `npm run check:security` fails if one doesn't (static check, no server needed).
+  The only deliberate exceptions are listed in `PUBLIC_WRITES` in `scripts/security-check.ts`.
+- Public suggestions are always stored unpublished, whatever the body says.
+- **Public photo uploads** use a one-time key: `POST /api/landmarks` returns `uploadKey` (HMAC of
+  id + expiry, 15 min, `server/security.ts`), sent back as `X-Upload-Key`. Valid only for that
+  landmark, only while unpublished, max 10 photos. A server restart voids outstanding keys.
+- **Frontend:** admin calls go through `src/utils/adminFetch.ts` — never hand-build the
+  Authorization header. On 401 it clears the session and fires `admin-logout`; `AdminRoute`
+  shows the login screen. **Do not reload the page on 401** — reload-on-401 looped forever when
+  the dashboard rendered without a token (found in local testing; ~50 reloads in seconds).
+- The old "localhost skips admin login" bypass is gone. Local dev still works: with
+  `ADMIN_PASSWORD` unset the server accepts any login.
+- helmet CSP allows OSM tiles (img-src) and Nominatim (connect-src). If you add an external
+  service, add it to the CSP or the browser blocks it. `referrerPolicy` must stay
+  `strict-origin-when-cross-origin` — OSM tile servers refuse requests with no Referer.
+- Rate limits: 100/min on `/api`, 5/min login, 10/min suggestions and uploads, `trust proxy 1`.
+
+**Testing:** `npm test` (unit), `npm run check:security` (static). Live checks need a THROWAWAY
+server — the script creates and deletes rows:
+`BASE=http://localhost:3099 ADMIN_PASSWORD=x npm run check:security`. Never point it at production.
 
 ### 7. Framer Motion — Use Sparingly on Lists
 - **NEVER** use `layout`, `AnimatePresence`, `initial`, `animate`, or `exit` on components rendered in lists with 100+ items
@@ -70,3 +100,4 @@
 1. `npx tsc --noEmit` passes with zero errors
 2. No secrets in Dockerfile ARG/ENV
 3. `npm run build` succeeds locally
+4. `npm test` and `npm run check:security` pass

@@ -189,10 +189,16 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                 if (selectedFiles.length > 0) {
                     const imageData = new FormData();
                     selectedFiles.forEach(file => imageData.append('images', file));
-                    await fetch(`/api/landmarks/${created.id}/images`, {
+                    // The server returns a short-lived key that allows photos on this suggestion only
+                    const uploadRes = await fetch(`/api/landmarks/${created.id}/images`, {
                         method: 'POST',
+                        headers: created.uploadKey ? { 'X-Upload-Key': created.uploadKey } : undefined,
                         body: imageData
                     });
+                    if (!uploadRes.ok) {
+                        console.error('Photo upload failed:', uploadRes.status);
+                        alert('Your suggestion was sent, but the photos could not be uploaded. You can email them to info@laborheritage.org.');
+                    }
                 }
 
                 setIsSuccess(true);

@@ -4,6 +4,7 @@ import { CATEGORIES } from '../constants/categories';
 import type { Landmark, LandmarkImage } from './LandmarkCard';
 import ImageUploader from './ImageUploader';
 import ConfirmationModal from './ConfirmationModal';
+import { adminFetch } from '../utils/adminFetch';
 
 interface NominatimResult {
     display_name: string;
@@ -162,14 +163,8 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
     const confirmDeleteImage = async () => {
         if (!landmark || imageToDelete === null) return;
         try {
-            const token = sessionStorage.getItem('adminToken');
-            const headers: Record<string, string> = {};
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            const res = await fetch(`/api/landmarks/${landmark.id}/images/${imageToDelete}`, {
-                method: 'DELETE',
-                headers
+            const res = await adminFetch(`/api/landmarks/${landmark.id}/images/${imageToDelete}`, {
+                method: 'DELETE'
             });
             if (res.ok) {
                 setExistingImages(prev => prev.filter(img => img.id !== imageToDelete));
@@ -196,7 +191,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
         }
 
         try {
-            const response = await fetch(url, {
+            const response = await adminFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -215,10 +210,11 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
                 if (selectedFiles.length > 0) {
                     const imageData = new FormData();
                     selectedFiles.forEach(file => imageData.append('images', file));
-                    await fetch(`/api/landmarks/${landmarkId}/images`, {
+                    const uploadRes = await adminFetch(`/api/landmarks/${landmarkId}/images`, {
                         method: 'POST',
                         body: imageData
                     });
+                    if (!uploadRes.ok) alert('The landmark was saved, but the photos failed to upload.');
                 }
 
                 onSuccess();

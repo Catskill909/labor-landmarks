@@ -7,6 +7,9 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import sharp from 'sharp';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { isAdminRequest, safeEqual, createUploadKey, verifyUploadKey, toPublicLandmark, PUBLIC_MAX_IMAGES } from './security.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,8 +23,38 @@ const prisma = new PrismaClient();
 // Enable WAL mode for better concurrent read/write performance
 prisma.$executeRawUnsafe('PRAGMA journal_mode=WAL').catch(() => {});
 
+// Behind Coolify's proxy: trust one hop so rate limits see the real client IP,
+// not the proxy's (otherwise every visitor shares one limit).
+app.set('trust proxy', 1);
+
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            // Map tiles, bundled marker icons (data:), and upload previews (blob:)
+            "img-src": ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org", "https://tile.openstreetmap.org"],
+            // Address lookup in the suggestion and admin forms
+            "connect-src": ["'self'", "https://nominatim.openstreetmap.org"],
+        },
+    },
+    // OpenStreetMap's tile servers require a Referer; helmet's default
+    // (no-referrer) gets tiles refused. Same setting as the database app.
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    // The public JSON feed's image URLs are used by other sites
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
+}));
+
+// CORS stays open: /api/landmarks is a public feed, and admin calls use a
+// Bearer header (not cookies), so other origins cannot borrow a session.
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+const limiter = (windowMs: number, max: number) => rateLimit({ windowMs, max, standardHeaders: true, legacyHeaders: false });
+app.use('/api', limiter(60 * 1000, 100));           // general API (not images)
+const authLimiter = limiter(60 * 1000, 5);          // admin password attempts
+const submitLimiter = limiter(60 * 1000, 10);       // public suggestions
+const uploadLimiter = limiter(60 * 1000, 10);       // image uploads
 
 // Image uploads directory — Coolify persistent storage mounts here in production
 const uploadsDir = path.join(__dirname, '../uploads/landmarks');
@@ -43,7 +76,9 @@ const upload = multer({
 });
 
 // Serve uploaded images as static files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+    setHeaders: (res) => { res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); }
+}));
 
 // Admin Authentication Middleware
 // Verifies the admin password from Authorization header (Bearer token)
@@ -56,8 +91,7 @@ const adminAuth = (req: express.Request, res: express.Response, next: express.Ne
         return next();
     }
 
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader === `Bearer ${adminPassword}`) {
+    if (isAdminRequest(req.headers.authorization, adminPassword)) {
         next();
     } else {
         res.status(401).json({ error: 'Unauthorized - Invalid or missing admin credentials' });
@@ -66,7 +100,7 @@ const adminAuth = (req: express.Request, res: express.Response, next: express.Ne
 
 // API Endpoints
 // Password Verification for Admin (Production only) - NOT protected (it's the login endpoint)
-app.post('/api/admin/verify-password', (req, res) => {
+app.post('/api/admin/verify-password', authLimiter, (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD;
 
@@ -76,10 +110,21 @@ app.post('/api/admin/verify-password', (req, res) => {
         return res.json({ success: true, message: 'No admin password configured on server' });
     }
 
-    if (password === adminPassword) {
+    if (typeof password === 'string' && safeEqual(password, adminPassword)) {
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false, error: 'Invalid password' });
+    }
+});
+
+// Health check — touches the Landmark table, so a broken database reports 503
+app.get('/api/health', async (_req, res) => {
+    try {
+        await prisma.landmark.count();
+        res.json({ status: 'ok' });
+    } catch (error) {
+        console.error('Health check failed:', error);
+        res.status(503).json({ status: 'error' });
     }
 });
 
@@ -99,7 +144,7 @@ app.get('/api/landmarks', async (req, res) => {
 
         // Strip submitter contact info and add full image URLs
         const publicLandmarks = landmarks.map((l) => {
-            const { submitterName, submitterEmail, submitterComment, ...rest } = l as typeof l & { submitterName?: string; submitterEmail?: string; submitterComment?: string };
+            const rest = toPublicLandmark(l);
             return {
                 ...rest,
                 images: rest.images.map((img) => ({
@@ -145,13 +190,14 @@ app.delete('/api/admin/clear', adminAuth, async (req, res) => {
 // GET single landmark
 app.get('/api/landmarks/:id', async (req, res) => {
     const { id } = req.params;
+    const isAdmin = isAdminRequest(req.headers.authorization, process.env.ADMIN_PASSWORD);
     try {
         const landmark = await prisma.landmark.findUnique({
             where: { id: parseInt(id) },
             include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
-        if (landmark) {
-            res.json(landmark);
+        if (landmark && (isAdmin || landmark.isPublished)) {
+            res.json(isAdmin ? landmark : toPublicLandmark(landmark));
         } else {
             res.status(404).json({ error: 'Landmark not found' });
         }
@@ -162,11 +208,13 @@ app.get('/api/landmarks/:id', async (req, res) => {
 });
 
 // POST new landmark (Admin or Public Suggestion)
-app.post('/api/landmarks', async (req, res) => {
+app.post('/api/landmarks', submitLimiter, async (req, res) => {
     const { name, city, state, country, category, description, address, lat, lng, isPublished, email, website, telephone, sourceUrl, submitterName, submitterEmail, submitterComment } = req.body;
     try {
-        // Default isPublished to false if not provided (Public Suggestion)
-        const publishedStatus = isPublished !== undefined ? isPublished : false;
+        // Only an admin can create a published landmark; public suggestions
+        // always go to the review queue, whatever the request body says.
+        const isAdmin = isAdminRequest(req.headers.authorization, process.env.ADMIN_PASSWORD);
+        const publishedStatus = isAdmin && isPublished !== undefined ? Boolean(isPublished) : false;
 
         // Validation / Sanitization
         const parsedLat = parseFloat(lat);
@@ -200,7 +248,12 @@ app.post('/api/landmarks', async (req, res) => {
                 submitterComment: cleanString(submitterComment)
             } as any
         });
-        res.status(201).json(newLandmark);
+        if (isAdmin) {
+            res.status(201).json(newLandmark);
+        } else {
+            // The key lets this submitter attach photos to this suggestion only (see security.ts)
+            res.status(201).json({ ...toPublicLandmark(newLandmark), uploadKey: createUploadKey(newLandmark.id) });
+        }
     } catch (error) {
         console.error('Error creating landmark:', error);
         res.status(500).json({ error: 'Failed to create landmark' });
@@ -208,7 +261,7 @@ app.post('/api/landmarks', async (req, res) => {
 });
 
 // PUT update landmark
-app.put('/api/landmarks/:id', async (req, res) => {
+app.put('/api/landmarks/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     const { name, city, state, country, category, description, address, lat, lng, isPublished, email, website, telephone, sourceUrl } = req.body;
     try {
@@ -222,7 +275,7 @@ app.put('/api/landmarks/:id', async (req, res) => {
         };
 
         const updatedLandmark = await prisma.landmark.update({
-            where: { id: parseInt(id) },
+            where: { id: parseInt(id as string) },
             data: {
                 name,
                 city,
@@ -248,11 +301,11 @@ app.put('/api/landmarks/:id', async (req, res) => {
 });
 
 // DELETE landmark
-app.delete('/api/landmarks/:id', async (req, res) => {
+app.delete('/api/landmarks/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     try {
         await prisma.landmark.delete({
-            where: { id: parseInt(id) }
+            where: { id: parseInt(id as string) }
         });
         res.status(204).send();
     } catch (error) {
@@ -279,8 +332,29 @@ app.get('/api/admin/backup', adminAuth, async (_req, res) => {
     }
 });
 
+// Image uploads: an admin, or a public submitter holding the one-time key for
+// their own new suggestion. Checked BEFORE multer so a refused request is never
+// buffered into memory.
+const imageUploadAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (isAdminRequest(req.headers.authorization, process.env.ADMIN_PASSWORD)) {
+        res.locals.publicUpload = false;
+        return next();
+    }
+    const landmarkId = parseInt(req.params.id as string);
+    const key = req.headers['x-upload-key'];
+    if (typeof key !== 'string' || !verifyUploadKey(key, landmarkId)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const landmark = await prisma.landmark.findUnique({ where: { id: landmarkId } });
+    if (!landmark || landmark.isPublished) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    res.locals.publicUpload = true;
+    next();
+};
+
 // POST upload images for a landmark
-app.post('/api/landmarks/:id/images', upload.array('images', 10), async (req, res) => {
+app.post('/api/landmarks/:id/images', uploadLimiter, imageUploadAuth, upload.array('images', 10), async (req, res) => {
     const landmarkId = parseInt(req.params.id as string);
     const files = req.files as Express.Multer.File[];
 
@@ -292,6 +366,13 @@ app.post('/api/landmarks/:id/images', upload.array('images', 10), async (req, re
         const landmark = await prisma.landmark.findUnique({ where: { id: landmarkId } });
         if (!landmark) {
             return res.status(404).json({ error: 'Landmark not found' });
+        }
+
+        if (res.locals.publicUpload) {
+            const existing = await prisma.landmarkImage.count({ where: { landmarkId } });
+            if (existing + files.length > PUBLIC_MAX_IMAGES) {
+                return res.status(400).json({ error: `A suggestion can have at most ${PUBLIC_MAX_IMAGES} photos` });
+            }
         }
 
         // Get current max sortOrder for this landmark
