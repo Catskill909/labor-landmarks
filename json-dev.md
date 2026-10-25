@@ -1,5 +1,7 @@
 # JSON Feed Development & Spec Compliance
 
+> **Planning record (Mar 2026)** — may not match current code. Current state: `HANDOFF.md`.
+
 ## Overview
 The current `/api/landmarks` endpoint returns a plain JSON array. To improve compatibility with standard feed readers and aggregators, we should transition to the official [JSON Feed](https://jsonfeed.org/version/1.1) specification (RFC 8890).
 

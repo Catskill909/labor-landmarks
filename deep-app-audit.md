@@ -1,5 +1,7 @@
 # Deep Application Audit: Import/Export & Local vs Production
 
+> **Historical record (Feb 2026) — superseded.** Its "sync local → production via Import" advice is now **unsafe**: production is the master copy and import overwrites records and drops photos. Current rules: `HANDOFF.md` → THE ONLY WAY TO SYNC DATA, and `CLAUDE.md`.
+
 **Audit Date:** February 3, 2026  
 **Auditor:** AI Code Audit System  
 **Project:** Labor Landmarks Map  

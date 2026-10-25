@@ -1,5 +1,7 @@
 # App Updates Plan — Labor Landmarks Alpha Launch
 
+> **Historical record (Feb 2026 alpha-launch plan) — implemented.** Current state: `HANDOFF.md`; rules: `CLAUDE.md`.
+
 Requested by client ahead of Alpha launch to Labor historians.
 
 ---

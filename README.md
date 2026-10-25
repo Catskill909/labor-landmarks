@@ -16,8 +16,8 @@ A professional, full-stack interactive map application designed to explore, visu
 - **Category Filtering**: Quickly drill down by types like "Strike/Event", "Monument", "Union Hall", "Museum", etc.
 
 ### 📸 Image Gallery System
-- **Photo Uploads**: Admin and public users can upload images (JPEG, PNG, WebP, up to 5MB each).
-- **Automatic Thumbnails**: Server-side thumbnail generation via `sharp` (400px wide JPEG).
+- **Photo Uploads**: Admins, and the public with their own suggestion (via a one-time key), can upload images (JPEG, PNG, WebP, up to 5MB each).
+- **Automatic Thumbnails**: Server-side thumbnail generation via `sharp` (400px wide, same format as the original).
 - **Gallery Display**: Images appear on landmark cards (list view), map marker popups, and detail modals.
 - **Lightbox Viewer**: Full-screen image viewer with keyboard navigation and Framer Motion animations.
 - **Drag & Drop**: Reusable upload component with drag-and-drop, file previews, and client-side validation.
@@ -25,13 +25,13 @@ A professional, full-stack interactive map application designed to explore, visu
 ### 📢 Public Contributions
 - **Suggestion System**: Public users can suggest new landmarks via a modern, multi-step "Suggest a Landmark" modal with optional image uploads.
 - **Geocoding**: Integrated **OpenStreetMap Nominatim** for real-time address verification and coordinate generation.
-- **Draft Workflow**: User submissions are held in a secure Review Queue until approved by an admin.
+- **Draft Workflow**: User submissions are always held in the Review Queue until an admin approves them.
 
 ### 🛡️ Admin Dashboard (`/admin`)
 - **Review Queue**: Dedicated tab for vetting, editing, and publishing new submissions.
 - **CMS Control**: Full Edit/Delete/Add capabilities for all records in the inventory.
-- **Smart Merge Import**: Robust JSON import system that merges local data with production data by matching `sourceUrl` or `Name + Location`.
-- **Automated Backups**: 1-click JSON exports of the entire database.
+- **JSON Import**: Adds records; a matching `sourceUrl` **overwrites** the existing record, a matching name + location is skipped. Does not restore photos, submitter info or dates.
+- **JSON Backup**: 1-click export of all records (photo filenames only — no image files; full export with photos is planned).
 - **Category Management**: Advanced multi-tag selection for categorizing sites.
 
 ## 🛠️ Tech Stack
@@ -47,9 +47,11 @@ This project is fully containerized and ready for high-reliability deployment on
 
 - **Database Storage**: Uses a Docker volume to persist the SQLite database (`/app/data/dev.db`). **CRITICAL: Requires Coolify persistent storage volume at `/app/data`** — without this, the database is destroyed on every deploy.
 - **Image Storage**: Uploaded images stored on disk (`/app/uploads/landmarks/`). **CRITICAL: Requires Coolify persistent storage volume at `/app/uploads`** — without this, uploaded images are lost on every deploy.
-- **Auto-Migration**: The container automatically applies database schema updates on startup.
+- **Migrations**: On startup the container applies pending schema migrations only. A deploy that adds one needs **Stop, then Deploy** in Coolify (rolling updates hold the database lock).
 - **Auto-Seeding Safety**: Built-in protection to prevent production data overwrite during deployments.
 - **Volume Safety Check**: Startup logs a warning if no existing database is found, helping detect missing volume mounts.
+- **Security**: Every change requires the admin password (`ADMIN_PASSWORD`, set in Coolify); security headers and rate limits on; `GET /api/health` checks the database.
+- **Deploying**: pushing to `main` does nothing on its own — press **Deploy** in Coolify.
 
 ## � Local vs Production (IMPORTANT!)
 
@@ -57,15 +59,14 @@ This project is fully containerized and ready for high-reliability deployment on
 |---|-----------|------------|
 | **URL** | `localhost:5173` | `labor-landmarks.supersoul.top` |
 | **Database** | Your machine | Docker volume on server |
-| **Admin Auth** | Skipped | Password required |
+| **Admin Auth** | Login screen; any password works if `ADMIN_PASSWORD` is unset | Password required |
 
-### Syncing Data (The ONLY way)
-```
-LOCAL:  Admin → "Backup JSON" → downloads file
-PROD:   Admin → "Import JSON" → upload that file
-```
+### Data: production is the master copy
+Edit records in production admin. Never import a local backup over production — the local database is
+months old and import overwrites matching records. To add new records prepared locally, see
+[HANDOFF.md](HANDOFF.md) → THE ONLY WAY TO SYNC DATA.
 
-**⚠️ Git push updates CODE only, never DATA. See [HANDOFF.md](HANDOFF.md) for full details.**
+**⚠️ Git push updates CODE only (after Deploy is pressed), never DATA.**
 
 ## �💻 Local Development
 
@@ -86,12 +87,10 @@ PROD:   Admin → "Import JSON" → upload that file
 - `/server`: Express API implementation.
 - `/prisma`: Database schema and migration history.
 - `/uploads`: Local image storage (not committed to git).
-- `/scripts`: Recovery and automation utilities:
-    - `fix_international_data.ts`: Repairs geocoding and metadata for international sites.
-    - `recover_categories.ts`: Audits and restores landmark categories from description text.
+- `/scripts`: Utilities that run against the **local** database, plus `security-check.ts` (`npm run check:security`). Full list in [HANDOFF.md](HANDOFF.md).
 - `/map_data`: Landmark data scraped from the original Google Maps KML (pending import — see below).
 
 ## Map Data Import (Pending)
 A structured `landmarks.json` and its associated high-resolution images have been placed in the `map_data/` folder. This data was extracted from the original Google Maps KML file, and the broken library image links have been corrected.
-**Next Steps**: Write an import script to upload these images to storage and populate the database with the landmarks.
+**Next Steps**: 16 of the 60 entries already exist on the live site — dedupe first. Photos must go through the admin photo upload (JSON import doesn't carry images). Status and details: [HANDOFF.md](HANDOFF.md).
 

@@ -1,5 +1,7 @@
 # Map Marker Scaling & Custom Markers — Brainstorming
 
+> **Planning record (Mar 2026)** — may not match current code. Current state: `HANDOFF.md`.
+
 ## Current State
 
 - **Library:** Leaflet 1.9.4 + React-Leaflet 5.0.0

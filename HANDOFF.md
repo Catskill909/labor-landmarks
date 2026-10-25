@@ -1,18 +1,15 @@
 # Labor Landmarks: Project Handoff & Roadmap
 
+> **New session?** Read **CURRENT STATE** (near the end) first, then the critical section below.
+> Permanent rules live in `CLAUDE.md`.
+
 ---
 
-## 🔴 FRONT BURNER (13 Sep 2026) — some readers get ERR_SSL_PROTOCOL_ERROR
+## ✅ Resolved 14 Sep 2026 — some readers got ERR_SSL_PROTOCOL_ERROR
 
-Chris Garlock can't open this site (or labor-database) from one home network in
-Rochester; a second newsletter reader reports the same. **The server is not at
-fault** — verified from 34 home-network probes including Spectrum in Rochester.
-Leading explanation, unproven: a home-router security filter (likely Spectrum
-Security Shield) scoring `supersoul.top` as risky.
-
-**Full investigation, action tracker and next steps:** `network-error.md` in the
-*labor-database* working copy (`~/Desktop/labor-database/`), local-only and
-gitignored. **Do not change DNS or Coolify for this without reading it first.**
+A home-router security filter (Spectrum Security Shield) was blocking `supersoul.top`; Spectrum
+approved the unblock request. Fallback if it recurs, and the full investigation: `network-error.md`
+in the *labor-database* working copy (local-only). **Don't change DNS or Coolify for this.**
 
 ---
 
@@ -22,7 +19,10 @@ gitignored. **Do not change DNS or Coolify for this without reading it first.**
 - **Context**: We successfully extracted the original landmark descriptions and coordinates from a Google Map KML file.
 - **Images**: Google User Content thumbnails were discarded. Instead, we extracted the original high-resolution URLs (mostly from Rochester Public Library). We updated the outdated `rochester.lib.ny.us` domains to `libraryweb.org` and downloaded 47 high-res images.
 - **Action Required**: The developer needs to script the insertion of this data into the app's backend. Since the high-res images are now local, it is recommended to host them in the app's own storage (e.g. S3) during import to prevent future broken links.
-- **Production data rule still applies:** importing locally does not reach production — use Admin Import (see below).
+- **Status (checked 25 Oct 2026): still pending.** 60 entries; **16 already exist on the live site** by
+  name — dedupe against a fresh production export before importing, or they become duplicates.
+- **Photos don't travel through Admin Import** (see THE ONLY WAY TO SYNC DATA) — these 47 images need
+  uploading through the admin photo upload, or the export/restore work (tracker row 3) first.
 
 ---
 
@@ -42,14 +42,15 @@ gitignored. **Do not change DNS or Coolify for this without reading it first.**
 ║  Frontend URL:  http://localhost:5173                            ║
 ║  API URL:       http://localhost:3001                            ║
 ║  Database:      /prisma/dev.db (on YOUR Mac)                     ║
-║  Admin Login:   NOT REQUIRED (auto-bypassed on localhost)        ║
+║  Admin Login:   REQUIRED (any password if ADMIN_PASSWORD unset)  ║
+║                 localhost bypass removed 25 Oct 2026             ║
 ║  Purpose:       Development, testing, data preparation           ║
 ║  Safe to break: YES                                              ║
 ╚══════════════════════════════════════════════════════════════════╝
 
                     ┃  These are COMPLETELY SEPARATE  ┃
                     ┃  Git push does NOT sync data    ┃
-                    ┃  Only Admin Import syncs data   ┃
+                    ┃  Production is the master copy  ┃
 
 ╔══════════════════════════════════════════════════════════════════╗
 ║                        PRODUCTION                                 ║
@@ -67,7 +68,11 @@ gitignored. **Do not change DNS or Coolify for this without reading it first.**
 
 ## WHAT GIT PUSH DOES vs DOES NOT DO
 
-| ✅ Git Push DOES | ❌ Git Push DOES NOT |
+**A push alone changes nothing that is running** — no app on this server auto-deploys. The left
+column happens only after you press **Deploy** in Coolify. A deploy that adds a migration needs
+**Stop, then Deploy** (CLAUDE.md §4b).
+
+| ✅ Push + Deploy DOES | ❌ Never does |
 |------------------|----------------------|
 | Update React components | Change production database |
 | Update API endpoint code | Sync your local landmarks |
@@ -76,29 +81,29 @@ gitignored. **Do not change DNS or Coolify for this without reading it first.**
 | Update the seed file | Automatically run the seed |
 | Deploy new Docker image | Touch the Docker volume |
 
-**CRITICAL:** The production database lives in a Docker volume. Code deploys NEVER touch it (unless DB is empty, then seed runs once).
+**CRITICAL:** The production database lives in a Docker volume. Code deploys NEVER touch it (unless the DB is empty — then the seed loads 273 starter records).
 
 ---
 
 ## THE ONLY WAY TO SYNC DATA
 
-```
-LOCAL ADMIN                              PRODUCTION ADMIN
-http://localhost:5173/admin              https://labor-landmarks.supersoul.top/admin
+> ⚠️ **Production is the master copy.** LHF edits live in production admin every week; the local
+> database is a months-old snapshot (last refreshed Mar 2026). **Never import a local backup over
+> production to "fix" it** — that overwrites newer edits.
 
-   ┌─────────────────┐                      ┌─────────────────┐
-   │  Backup JSON    │ ──── file.json ────▶ │  Import JSON    │
-   └─────────────────┘                      └─────────────────┘
-```
+**What Admin Import actually does (25 Oct 2026):**
+- A record whose `sourceUrl` matches an existing one **overwrites** it (name, description, address…).
+- A record without `sourceUrl` that matches name + location is skipped; otherwise it is added.
+- It **does not restore photos, submitter name/email/comment, or original dates.** The backup lists
+  photo filenames but contains no image files.
 
-**Step-by-step:**
-1. LOCAL: Go to `http://localhost:5173/admin`
-2. LOCAL: Click **"Backup JSON"** → saves file to Downloads
-3. PRODUCTION: Go to `https://labor-landmarks.supersoul.top/admin`
-4. PRODUCTION: Login with admin password
-5. PRODUCTION: Click **"Backup JSON"** first (safety backup!)
-6. PRODUCTION: Click **"Import JSON"** → upload file from step 2
-7. PRODUCTION: Verify import stats match expectations
+**So:** use Import only to **add new records prepared locally**, and only after:
+1. PRODUCTION: Login → **"Backup JSON"** (safety copy)
+2. Check the import file against that fresh production backup: no unintended name/`sourceUrl` matches
+3. PRODUCTION: **"Import JSON"** → check the added/updated/skipped counts match what you expected
+
+To fix a single production record, edit it in production admin. For a full restore including photos,
+the export/restore-with-photos work (tracker row 3) is the planned fix.
 
 ---
 
@@ -119,7 +124,8 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 
 | Rule | Why |
 |------|-----|
-| 🔴 NEVER assume git push syncs data | It doesn't. Only Admin Import syncs data. |
+| 🔴 NEVER assume git push syncs data | It doesn't — and a push isn't live until Deploy is pressed. |
+| 🔴 NEVER import a local backup over production | Local is months old; import overwrites newer edits and drops photos |
 | 🔴 NEVER run scripts against production | Scripts use local .env DATABASE_URL |
 | 🔴 NEVER manually edit .db files | Use Admin Dashboard or Prisma Studio |
 | 🔴 NEVER confuse localhost with production URL | Check the URL bar before every action |
@@ -127,7 +133,7 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 | 🔴 NEVER add `apk add` to Dockerfile | Alpine CDN has DNS outages — use built-in tools or npm packages |
 | 🔴 NEVER use framer-motion `layout`/`AnimatePresence` on lists with 100+ items | Crashes mobile browsers (see Phase 9) |
 | 🟢 ALWAYS ask user which environment they mean | "Local or production?" |
-| 🟢 ALWAYS backup production before importing | Click Backup JSON first |
+| 🟢 ALWAYS backup production before importing | Click Backup JSON first (it has no photo files — the volume snapshot does) |
 | 🟢 ALWAYS verify record counts after sync | Compare local vs production counts |
 | 🟢 ALWAYS check if local server is running | `curl http://localhost:3001/api/landmarks` |
 
@@ -136,21 +142,17 @@ http://localhost:5173/admin              https://labor-landmarks.supersoul.top/a
 ## COMMON PITFALLS (AI AGENTS READ THIS)
 
 ### Pitfall 1: "Production data is wrong/missing"
-**WRONG:** Try to fix via code changes and git push  
-**RIGHT:** Sync via Admin Dashboard (Backup JSON → Import JSON)
+**WRONG:** Try to fix via code changes and git push — or import the local database over it  
+**RIGHT:** Edit the record in production admin. For lost data, restore from a production backup or the VPS snapshot.
 
-### Pitfall 2: "Metadata is null on production"  
-**CAUSE:** Old import code didn't save all fields  
-**FIX:** Import again from local (code is now fixed)
-
-### Pitfall 3: "Local shows data, production is empty"
-**CAUSE:** They're separate databases  
-**FIX:** Import local backup to production via Admin
+### Pitfall 3: "Local shows data, production doesn't"
+**CAUSE:** They're separate databases — and local is the stale one  
+**FIX:** Usually nothing to fix. To add genuinely new records, follow THE ONLY WAY TO SYNC DATA.
 
 ### Pitfall 4: "After deploy, production data disappeared"
 **CAUSE:** Docker volume wasn't persisted OR seed ran on empty DB  
 **CHECK:** Does production show 0 records or seed data (273)?  
-**FIX:** Import from your local backup
+**FIX:** Check both Coolify volumes are mounted, then restore the volumes from the VPS snapshot (keeps photos). A JSON import alone loses photos and recent edits.
 
 ### Pitfall 5: "I ran a fix script but production didn't change"
 **CAUSE:** Scripts run against LOCAL database only  
@@ -340,9 +342,17 @@ Prompted by feedback from Saul Schniderman (LHF co-founder, former Library of Co
 
 **Audit doc**: `search-queries.md` — full bug inventory and plan (generated Apr 2026)
 
+### Phase 12: Map Controls, Deploy Fix, Security (Completed — 25 Oct 2026)
+- Globe "show all landmarks" button + dark control group (member request) — `6dba6e9`
+- Deploys failed since the Coolify upgrade (startup migration locked out) — `docker-entrypoint.sh` — `2780bde`
+- Security: password on every write route, one-time photo key for public suggestions, helmet, rate limits — `7c779a0`
+- Package security updates (sharp 0.35.5, multer 2.5, Express internals) — `4699c56`
+- Details: CURRENT STATE below; rules: CLAUDE.md §4b, §6b, Dependency security
+
 ### Phase 11: Future Enhancements (Recommended Next)
+- [ ] **Export/restore with photos** (tracker row 3): one ZIP with data + images; restore into an empty site
+- [ ] **Map data import** (60 Google-map entries in `map_data/`, 16 already live — see top)
 - [ ] **Email Notifications**: Resend (recommended) or Nodemailer for new suggestion alerts
-- [ ] **Authentication**: Secure `/admin` route with password protection
 - [ ] **Image reordering**: Drag-to-reorder images in admin modal (sortOrder)
 - [ ] **Image captions**: Caption editing UI in admin modal
 
@@ -376,29 +386,30 @@ IF record has NO sourceUrl (manual entry):
 ### Critical Technical Configs (For Coolify/Docker)
 
 *   **Port 3001**: The application uses **Port 3001** consistently across local development and Docker. The `Dockerfile` sets `EXPOSE 3001` and `ENV PORT=3001`, matching `docker-compose.yml`. Ensure your deployment platform (Coolify, Railway, etc.) maps to port 3001.
-*   **Admin API Security**: All `/api/admin/*` endpoints are protected with Bearer token authentication. The frontend sends the admin password as `Authorization: Bearer <password>` header.
+*   **API Security**: Every route that changes data, and every `/api/admin/*` route, requires `Authorization: Bearer <ADMIN_PASSWORD>` (sent by `src/utils/adminFetch.ts`). Public photo uploads use a one-time key instead. Full rules: CLAUDE.md §6b.
+*   **Health check**: `GET /api/health` → `{"status":"ok"}` (200) or 503 — it queries the database.
 *   **Database Migrations**:
     *   **Rule**: If you change `prisma/schema.prisma` (e.g., add a column), you **MUST** run `npx prisma migrate dev` locally.
     *   **Why?**: This generates the SQL file in `prisma/migrations/`. The production server uses this file to update the live database.
--   **Smart Seeding RE-ENABLED**: The `Dockerfile` now runs `npx tsx prisma/seed.ts` on every startup.
--   **Safe Seed Logic**: The script is now "Smart":
-    -   **Empty DB**: If the map has 0 markers, it automatically loads from `landmarks_imported.json` (the full 274 record set).
-    -   **Non-Empty DB**: If the map already has data (your edits, new submissions), it changes **NOTHING**.
--   **Security**: This ensures you never see a "blank map" in production again, while still protecting your manual edits.
+-   **Seeding**: `docker-entrypoint.sh` runs `prisma/seed.ts` on every start, but it only writes into an
+    **empty** database (loads `src/data/landmarks_imported.json`, 273 records). With data present it does
+    nothing. `FORCE_SEED=true` **overwrites everything** — never set it in production.
 
 ---
 
 ## Utility & Maintenance Scripts (`/scripts`)
 
-Specialized TypeScript scripts are available for bulk database operations. Run them via `npx tsx scripts/[filename].ts`.
+TypeScript scripts, run with `npx tsx scripts/<name>.ts`. **All of them use the LOCAL database** (`.env`
+`DATABASE_URL`) — they never touch production.
 
-1.  **`fix_international_data.ts`**:
-    - **Purpose**: Fixes landmarks mislabeled as "USA" based on coordinates (e.g., Lng > -30).
-    - **Logic**: Detects countries like "Denmark", "United Kingdom", etc., from descriptions and updates the `country` and `city` fields.
-    - **Geocoding**: Corrects specific known errors (e.g., Mather Mine, Kate Mullaney House).
-2.  **`recover_categories.ts`**:
-    - **Purpose**: Restores `category` field for records where the category was incorrectly set to the landmark's Name.
-    - **Logic**: Extracts the category tag (e.g., "Statue, Memorial") from the end of the `description` field.
+| Script | What it does |
+|---|---|
+| `security-check.ts` | `npm run check:security` — static check that every write route has auth; with `BASE=` set, live attack checks against a **throwaway** server (it creates/deletes rows — never production) |
+| `fix_international_data.ts` | Fixes landmarks mislabelled "USA" from coordinates; corrects known geocoding errors |
+| `recover_categories.ts` | Restores `category` where it was set to the landmark's name, from the description text |
+| `audit_and_fix_locations.ts` | One-off location fixes for specific named landmarks |
+| `export_to_json.ts` | Dumps the local database to JSON |
+| `fix_json_source.ts` | One-off fix to an external source file (hardcoded path outside this repo) |
 
 ---
 
@@ -406,41 +417,43 @@ Specialized TypeScript scripts are available for bulk database operations. Run t
 When picking up from this document, future AI agents should:
 1.  **Check Data Health**: Run `npx tsx scripts/recover_categories.ts` if categories look like titles in the UI.
 2.  **Schema Context**: Note that `country` is optional (`String?`) and defaults to `null` to allow international flexibility.
-3.  **Local vs Prod**: Always confirm if the user wants to push **Code** (Git) or sync **Data** (Admin Export/Import).
+3.  **Local vs Prod**: Always confirm if the user wants to push **Code** (Git, then Deploy in Coolify) or change **Data** (production admin — production is the master copy).
 4.  **UI Consistency**: Maintain the "Glassmorphism" theme using Tailwind v4 custom tokens.
-5.  **NEVER** re-enable auto-seeding in `Dockerfile`; use `FORCE_SEED=true` only if explicitly requested.
+5.  **NEVER** set `FORCE_SEED=true` in production — it overwrites all data. The normal seed only fills an empty database.
 
 ---
 
-## CURRENT STATE (Apr 3, 2026) — READ THIS FIRST IN NEXT SESSION
+## CURRENT STATE (25 Oct 2026) — READ THIS FIRST IN NEXT SESSION
 
-### Git Status: SEARCH FIX READY TO COMMIT/PUSH
-Phase 10 (search overhaul) is implemented and `tsc --noEmit` is clean. Not yet pushed to production.
+### Deployed and verified live (25 Oct 2026)
+`6dba6e9` map controls · `2780bde` deploy fix · `7c779a0` security · `4699c56` package updates.
+Working tree clean; `main` = production. Live audit after deploy: every write route refuses missing or
+wrong passwords, no submitter data or unpublished rows public, map/tiles/markers/address lookup load
+with no blocked requests, photo upload + thumbnail work, rate limiter counts per visitor.
 
-### Production Stats (as of Mar 2026)
-- **336 landmarks** with **256 images** live at `labor-landmarks.supersoul.top`
-- **409KB** JSON API payload at `/api/landmarks`
+### Production (25 Oct 2026)
+- **426 landmarks + 1 unpublished suggestion (#505)**, ~929 photos, at `labor-landmarks.supersoul.top`
+- A record named **"test" (#513)** was created to check photo upload — delete it if it's still there
 
-### Recent Fixes (Phase 10, Apr 2026)
-- **Search overhauled**: Multi-word AND logic, state full-name mapping, punctuation normalization, description field added — fixes "Bloomington Illinois" returning 0 results
-- See `search-queries.md` for full audit and `HANDOFF.md` Phase 10 for change details
+### Open items (in order)
+1. **Export/restore with photos** (tracker row 3) — today's backup can't fully restore the site (no
+   photo files; import drops submitter info and dates). Plan: one ZIP export; restore only into an
+   **empty** site. Install Docker locally first (OrbStack or Docker Desktop) to test the real container.
+2. **Map data import** — see top of this file.
+3. **Prisma 6 → 7** — clears the last 3 npm advisories (CLI only, not reachable by visitors). Its own project.
+4. **Coolify health check** — a 25 Oct deploy log showed Coolify probing `localhost:3000`; the app
+   listens on **3001** with `GET /api/health`. Check Coolify → Health Checks uses port 3001.
 
-### Recent Fixes (Phase 9, Mar 2026)
-- **Mobile crash fixed**: Removed framer-motion per-card animations that were crashing mobile Chrome/Safari by creating 336 GPU layers
-- **Dockerfile hardened**: Removed `apk add curl` that was failing due to Alpine CDN DNS outages
-- **CSS cleanup**: Removed dead Vite scaffold `App.css`, added missing `no-scrollbar` utility, fixed `h-screen` → `h-dvh`
-
-### Build Status: CLEAN
-- `npx tsc --noEmit` passes with zero errors
-- `npm run build` succeeds locally
+### Checks before every push
+`npx tsc --noEmit` · `npm run build` · `npm test` · `npm run check:security` (CLAUDE.md Pre-Push Checklist)
 
 ### Image System Architecture (No base64 — real files)
 Images are stored as real files on disk, NOT base64 in the database:
-1. **Upload**: `multer` receives multipart form data into memory buffers
-2. **Processing**: `sharp` saves original file + generates 400px-wide JPEG thumbnail (prefixed `thumb_`)
+1. **Upload**: `multer` receives multipart form data into memory — only after the auth check passes (admin password, or a public suggestion's one-time key)
+2. **Processing**: `sharp` saves the original + a 400px-wide thumbnail in the **same format** (prefixed `thumb_`). Accepted: JPEG, PNG, WebP up to 5MB
 3. **Storage**: Files written to `./uploads/landmarks/` (local) or `/app/uploads/landmarks/` (production)
 4. **Serving**: `express.static` serves `/uploads/` directory as static files
-5. **Display**: Frontend references `/uploads/landmarks/thumb_filename.jpg` for thumbnails, full filename for lightbox
+5. **Display**: Frontend uses `/uploads/landmarks/thumb_<filename>` for thumbnails, the full filename for the lightbox
 6. **Cleanup**: `onDelete: Cascade` removes DB records; DELETE endpoint also removes files from disk
 
 ### z-index Layering Reference

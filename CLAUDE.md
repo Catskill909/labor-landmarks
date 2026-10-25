@@ -21,7 +21,9 @@
 - **CODE problems** → fix via git push, **then press Deploy in Coolify**.
   *Corrected 25 Oct 2026: no application on this server has auto-deploy
   enabled (verified 26 Aug 2026). A push on its own changes nothing that is running.*
-- **DATA problems** → fix via Admin Dashboard Import/Export (production DB is separate)
+- **DATA problems** → fix in **production admin** — production is the master copy. Never import the
+  local database over it (local is months old; import overwrites matching records and drops photos).
+  Admin Import only for adding new records — see HANDOFF.md → THE ONLY WAY TO SYNC DATA
 - Always ask: "Is this a CODE problem or a DATA problem?"
 
 ### 4. Dockerfile & Coolify Volumes
