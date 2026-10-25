@@ -18,7 +18,9 @@
 - Local VSCode may not show errors that the full `tsc -b` build catches (different tsconfig scopes)
 
 ### 3. CODE Problems vs DATA Problems
-- **CODE problems** → fix via git push → Coolify auto-deploys
+- **CODE problems** → fix via git push, **then press Deploy in Coolify**.
+  *Corrected 25 Oct 2026: no application on this server has auto-deploy
+  enabled (verified 26 Aug 2026). A push on its own changes nothing that is running.*
 - **DATA problems** → fix via Admin Dashboard Import/Export (production DB is separate)
 - Always ask: "Is this a CODE problem or a DATA problem?"
 
@@ -52,7 +54,7 @@
 - **Frontend:** React + Vite (builds to `dist/`)
 - **Backend:** Express server at `server/index.ts`, runs via `tsx`
 - **Database:** SQLite via Prisma ORM
-- **Deployment:** Coolify (auto-deploys from `main` branch via Docker)
+- **Deployment:** Coolify, Docker build from `main` — **no auto-deploy**; press Deploy after pushing
 - **Port:** 3001 (standardized everywhere)
 
 ## Pre-Push Checklist
