@@ -33,6 +33,15 @@
   - `/app/uploads` — Uploaded images. Without this, all images are lost on every deploy.
 - Verify in Coolify: Configuration → Persistent Storage → must show 2 volumes with different names
 
+### 4b. Deploys are rolling updates — schema changes need Stop first
+- Coolify keeps the OLD container serving until the new one is healthy. While the
+  old server runs, `prisma migrate deploy` cannot lock the SQLite file
+  ("database is locked"). This made every deploy fail and roll back on 25 Oct 2026.
+- `docker-entrypoint.sh` therefore runs `prisma migrate status` (read-only) first
+  and only migrates when something is pending. Ordinary deploys: zero downtime.
+- **A deploy that adds a migration:** back up, **Stop the app in Coolify, then
+  Deploy.** Otherwise the new container retries, prints FATAL and rolls back.
+
 ### 5. Prisma Patterns
 - Always import both `PrismaClient` and `Prisma` from `@prisma/client` when using transactions
 - Transaction client type: `Prisma.TransactionClient` (NOT `typeof prisma`)

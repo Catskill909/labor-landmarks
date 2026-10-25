@@ -42,18 +42,7 @@ RUN mkdir -p /app/data /app/uploads/landmarks
 
 EXPOSE 3001
 
-# Initialize DB (migrate), seed if empty, and start server
-# Safety check: detect if /app/data volume is missing (DB would be wiped every deploy)
-CMD ["sh", "-c", "\
-  if [ ! -f /app/data/dev.db ]; then \
-    echo '========================================'; \
-    echo 'WARNING: No existing database found at /app/data/dev.db'; \
-    echo 'If this is production, a persistent volume MUST be mounted at /app/data'; \
-    echo 'Without it, ALL DATA IS LOST on every deploy!'; \
-    echo '========================================'; \
-  else \
-    echo \"Existing database found at /app/data/dev.db\"; \
-  fi && \
-  npx prisma migrate deploy && \
-  npx tsx prisma/seed.ts && \
-  tsx server/index.ts"]
+# Startup: migrate only when needed (see docker-entrypoint.sh for why), seed if empty, start server
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+CMD ["./docker-entrypoint.sh"]
