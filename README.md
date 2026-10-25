@@ -88,9 +88,7 @@ months old and import overwrites matching records. To add new records prepared l
 - `/prisma`: Database schema and migration history.
 - `/uploads`: Local image storage (not committed to git).
 - `/scripts`: Utilities that run against the **local** database, plus `security-check.ts` (`npm run check:security`). Full list in [HANDOFF.md](HANDOFF.md).
-- `/map_data`: Landmark data scraped from the original Google Maps KML (pending import — see below).
+- `/map_data`: Rochester data scraped from the original Google Maps KML — reference only, not to be imported.
 
-## Map Data Import (Pending)
-A structured `landmarks.json` and its associated high-resolution images have been placed in the `map_data/` folder. This data was extracted from the original Google Maps KML file, and the broken library image links have been corrected.
-**Next Steps**: 16 of the 60 entries already exist on the live site — dedupe first. Photos must go through the admin photo upload (JSON import doesn't carry images). Status and details: [HANDOFF.md](HANDOFF.md).
-
+## Map Data (reference only)
+`map_data/` holds the Rochester Google-map data extracted in Sep 2026. Chris entered those landmarks by hand, so it is **not** to be imported (see [HANDOFF.md](HANDOFF.md)).

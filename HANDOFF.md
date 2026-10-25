@@ -13,16 +13,12 @@ in the *labor-database* working copy (local-only). **Don't change DNS or Coolify
 
 ---
 
-## 📦 Pending: Map Data Import (added 13 Sep 2026)
+## ✅ Closed: Rochester map data import (no import needed)
 
-- **Data Location**: `map_data/landmarks.json` and `map_data/high_res_images/`
-- **Context**: We successfully extracted the original landmark descriptions and coordinates from a Google Map KML file.
-- **Images**: Google User Content thumbnails were discarded. Instead, we extracted the original high-resolution URLs (mostly from Rochester Public Library). We updated the outdated `rochester.lib.ny.us` domains to `libraryweb.org` and downloaded 47 high-res images.
-- **Action Required**: The developer needs to script the insertion of this data into the app's backend. Since the high-res images are now local, it is recommended to host them in the app's own storage (e.g. S3) during import to prevent future broken links.
-- **Status (checked 25 Oct 2026): still pending.** 60 entries; **16 already exist on the live site** by
-  name — dedupe against a fresh production export before importing, or they become duplicates.
-- **Photos don't travel through Admin Import** (see THE ONLY WAY TO SYNC DATA) — these 47 images need
-  uploading through the admin photo upload, or the export/restore work (tracker row 3) first.
+Chris entered the Rochester landmarks by hand himself (his email of 13 Sep 2026; entries edited
+through 18 Sep), and the bulk import is not on LHF's 22 Oct priority list. The extracted data stays
+in `map_data/` for reference. **Don't import it** — 16 of its 60 entries already exist on the live
+site and would duplicate.
 
 ---
 
@@ -351,7 +347,6 @@ Prompted by feedback from Saul Schniderman (LHF co-founder, former Library of Co
 
 ### Phase 11: Future Enhancements (Recommended Next)
 - [ ] **Export/restore with photos** (tracker row 3): one ZIP with data + images; restore into an empty site
-- [ ] **Map data import** (60 Google-map entries in `map_data/`, 16 already live — see top)
 - [ ] **Email Notifications**: Resend (recommended) or Nodemailer for new suggestion alerts
 - [ ] **Image reordering**: Drag-to-reorder images in admin modal (sortOrder)
 - [ ] **Image captions**: Caption editing UI in admin modal
@@ -439,7 +434,7 @@ with no blocked requests, photo upload + thumbnail work, rate limiter counts per
 1. **Export/restore with photos** (tracker row 3) — today's backup can't fully restore the site (no
    photo files; import drops submitter info and dates). Plan: one ZIP export; restore only into an
    **empty** site. Install Docker locally first (OrbStack or Docker Desktop) to test the real container.
-2. **Map data import** — see top of this file.
+2. ~~Map data import~~ — closed: Chris entered the Rochester landmarks by hand (see top).
 3. **Prisma 6 → 7** — clears the last 3 npm advisories (CLI only, not reachable by visitors). Its own project.
 4. ~~Coolify health check~~ **Done 25 Oct:** set to `GET localhost:3000/api/health` and verified with a
    successful deploy. (Production runs on 3000, not the code default 3001.)
