@@ -1,5 +1,16 @@
 # CLAUDE.md - Project Guardrails for Labor Landmarks
 
+> 🏠 **Managed from `~/Desktop/lhf-server` since 2026-11-03.** LHF's apps are moving to
+> LHF's own server. Deploys, domains, backups and server work for this app are run
+> from that folder, and its manual is the private repo
+> `Labor-Heritage-Foundation/lhf-server-manual` (see `docs/09-apps.md` there).
+> Start any hosting or deploy session in `lhf-server`; this folder is for the app's code.
+>
+> **Status: not moved yet** — still on the old server (supersoul). It will move to the
+> LHF server later; the repo moves into the `Labor-Heritage-Foundation` GitHub org at
+> that time. Its startup script already has the migration-lock fix (migrate only when
+> needed), so it is ready for rolling deploys there.
+
 ## Critical Rules (Read Before Every Session)
 
 ### 1. TypeScript Strict Mode is ON
