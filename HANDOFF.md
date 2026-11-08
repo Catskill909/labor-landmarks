@@ -418,6 +418,41 @@ When picking up from this document, future AI agents should:
 
 ---
 
+## 🔗 SHAREABLE LINKS — built 8 Nov 2026 · ⚠️ three steps at the server move
+
+Every landmark has its own address: `/landmark/<id>-<name>`, e.g.
+`/landmark/540-the-abraham-lincoln-brigade-monument`. The number finds the landmark; the words
+are for readers. Links with stale or missing words 301 to the current form.
+- Opening a landmark (map pin → VIEW DETAILS, or list → READ MORE) sets the address; close,
+  Escape or Back returns. **Previous/Next replace the address**, so Back goes to the map/list.
+- **A shared link** opens straight away (all landmarks are already loaded); closing it flies
+  the map to that landmark. Unknown/unpublished links land on the map with a notice.
+- **Copy link** next to the close button (icon only on phones, named for screen readers).
+- **Link previews** (Open Graph) for Facebook, iMessage etc.: "Name — City, State", summary,
+  first photo — or `public/laborheritage.png` for the 32 of 454 landmarks without one.
+- Fixed on the way: Escape now closes the popup in map view too (was list only); the public
+  feed's photo URLs use `PUBLIC_BASE_URL` instead of the request's X-Forwarded-Host header;
+  the "show all" fit timer is cancelled when the list changes; close button, popup, pins and
+  READ MORE buttons have names for screen readers.
+- **Admin:** the login no longer waits for every public landmark to load first.
+- Code: `server/landmark-link.ts` (shared with the browser), `server/share-meta.ts`,
+  `/landmark/:ref` route in `server/index.ts`; the router moved from `App.tsx` to `main.tsx`.
+- **Tests:** `npm test` 24 (links; hostile text in every preview field — fails with escaping
+  removed). `npm run test:browser` 12 checks in Chrome — 36/36 over three runs; each fix put
+  back (Escape, fly-to, Previous/Next, feed header) is caught by its check.
+
+**Coolify setting:** `PUBLIC_BASE_URL=https://labor-landmarks.supersoul.top` (added 8 Nov).
+
+**⚠️ When this app moves to the LHF server — do not miss:**
+1. Set `PUBLIC_BASE_URL` to the **new** address. Don't copy the old value across.
+2. The old address must redirect **keeping the full path**, so `/landmark/...` links shared
+   before the move still open the right landmark. Test with a deep link.
+3. That redirect has to keep running as long as old links should work.
+
+Full steps (private): `lhf-server` → `docs/09-apps.md`, "Shareable links".
+
+---
+
 ## CURRENT STATE (25 Oct 2026) — READ THIS FIRST IN NEXT SESSION
 
 ### Deployed and verified live (25 Oct 2026)
@@ -440,7 +475,8 @@ with no blocked requests, photo upload + thumbnail work, rate limiter counts per
    successful deploy. (Production runs on 3000, not the code default 3001.)
 
 ### Checks before every push
-`npx tsc --noEmit` · `npm run build` · `npm test` · `npm run check:security` (CLAUDE.md Pre-Push Checklist)
+`npx tsc --noEmit` · `npm run build` · `npm test` · `npm run check:security` · `npm run test:browser`
+when pages changed (CLAUDE.md Pre-Push Checklist)
 
 ### Image System Architecture (No base64 — real files)
 Images are stored as real files on disk, NOT base64 in the database:

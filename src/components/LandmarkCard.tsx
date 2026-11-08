@@ -83,6 +83,8 @@ const LandmarkCard: React.FC<LandmarkCardProps> = ({ landmark, onClick }) => {
                         e.stopPropagation();
                         onClick();
                     }}
+                    // Every card says "READ MORE"; the name tells them apart for screen readers.
+                    aria-label={`Read more: ${landmark.name}`}
                     className="flex items-center gap-2 text-xs font-bold text-white group-hover:gap-3 transition-all"
                 >
                     READ MORE

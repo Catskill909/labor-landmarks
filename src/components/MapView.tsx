@@ -18,26 +18,57 @@ L.Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-interface MapViewProps {
+interface MapMarkersProps {
     landmarks: Landmark[];
     onSelectLandmark: (landmark: Landmark) => void;
 }
 
-const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
+interface MapViewProps extends MapMarkersProps {
+    /** Fly to this landmark (after closing a shared link's popup). */
+    focus?: Landmark | null;
+    /** Called once the map has flown to `focus`, so it is not repeated. */
+    onFocusDone?: () => void;
+}
+
+/** The "show all landmarks" fit waits this long after the map appears. */
+const FIT_DELAY_MS = 100;
+
+/**
+ * Flies to `focus` when it is set, then reports back so it happens once.
+ * Starts just after the "show all landmarks" fit is due: a shared link's popup
+ * can be closed before that fit has run, and the fit must not then undo the
+ * fly-to. (A later flyTo interrupts an earlier one still animating.)
+ * `onDone` must be stable (useCallback), or each render restarts the wait.
+ */
+const MapFocus: React.FC<{ focus?: Landmark | null; onDone?: () => void }> = ({ focus, onDone }) => {
+    const map = useMap();
+    React.useEffect(() => {
+        if (!focus) return;
+        const timer = setTimeout(() => {
+            map.flyTo([focus.lat, focus.lng], Math.max(map.getZoom(), 12));
+            onDone?.();
+        }, FIT_DELAY_MS + 50);
+        return () => clearTimeout(timer);
+    }, [focus, map, onDone]);
+    return null;
+};
+
+const MapMarkers: React.FC<MapMarkersProps> = ({ landmarks, onSelectLandmark }) => {
     const map = useMap();
 
     React.useEffect(() => {
-        if (landmarks.length > 0) {
-            const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
-            // Small timeout to ensure map container is ready for animation on initial load
-            setTimeout(() => {
-                map.flyToBounds(bounds, {
-                    paddingTopLeft: [20, 50],
-                    paddingBottomRight: [20, 20],
-                    maxZoom: 14
-                });
-            }, 100);
-        }
+        if (landmarks.length === 0) return;
+        const bounds = L.latLngBounds(landmarks.map(l => [l.lat, l.lng]));
+        // Small timeout to ensure map container is ready for animation on initial load
+        const timer = setTimeout(() => {
+            map.flyToBounds(bounds, {
+                paddingTopLeft: [20, 50],
+                paddingBottomRight: [20, 20],
+                maxZoom: 14
+            });
+        }, FIT_DELAY_MS);
+        // A newer list (search, category) replaces a fit that hasn't run yet.
+        return () => clearTimeout(timer);
     }, [landmarks, map]);
 
     return (
@@ -45,6 +76,8 @@ const MapMarkers: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => 
             {landmarks.map((landmark) => (
                 <Marker
                     key={landmark.id}
+                    // Names the pin for screen readers (no visible change).
+                    alt={landmark.name}
                     position={[landmark.lat, landmark.lng]}
                     eventHandlers={{
                         click: () => {
@@ -171,7 +204,7 @@ const MapControls: React.FC<{ landmarks: Landmark[] }> = ({ landmarks }) => {
     );
 };
 
-const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
+const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark, focus, onFocusDone }) => {
     const center: [number, number] = [39.8283, -98.5795]; // Geographical center of USA
 
     return (
@@ -190,6 +223,7 @@ const MapView: React.FC<MapViewProps> = ({ landmarks, onSelectLandmark }) => {
                 />
                 <MapMarkers landmarks={landmarks} onSelectLandmark={onSelectLandmark} />
                 <MapControls landmarks={landmarks} />
+                <MapFocus focus={focus} onDone={onFocusDone} />
             </MapContainer>
         </div>
     );

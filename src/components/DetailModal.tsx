@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Landmark } from './LandmarkCard';
 import ImageLightbox from './ImageLightbox';
+import CopyLinkButton from './CopyLinkButton';
 
 // Fix for default marker icon in React-Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -44,17 +45,21 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
         };
     }, [isOpen]);
 
-    // Keyboard navigation
+    // Keyboard: Escape closes in both views; arrows step through the list
+    // (Previous/Next exist only in list view). Escape used to work only in the
+    // list view (fixed 8 Nov 2026).
     useEffect(() => {
-        if (!isOpen || viewMode !== 'list') return;
+        if (!isOpen) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight' && onNext) {
+            if (e.key === 'Escape') {
+                onClose();
+            } else if (viewMode !== 'list') {
+                return;
+            } else if (e.key === 'ArrowRight' && onNext) {
                 onNext();
             } else if (e.key === 'ArrowLeft' && onPrevious) {
                 onPrevious();
-            } else if (e.key === 'Escape') {
-                onClose();
             }
         };
 
@@ -116,14 +121,21 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                     ease: [0.4, 0, 0.2, 1] // Native-like smooth ease-in-out
                                 }}
                                 className="relative w-full max-h-[90vh] overflow-y-auto no-scrollbar glass rounded-3xl border border-white/10 shadow-2xl flex flex-col md:flex-row mx-auto"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label={landmark.name}
                             >
-                                {/* Close Button */}
-                                <button
-                                    onClick={onClose}
-                                    className="absolute top-4 right-4 z-[10000] p-2 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/5"
-                                >
-                                    <X size={20} />
-                                </button>
+                                {/* Copy link + Close */}
+                                <div className="absolute top-4 right-4 z-[10000] flex items-center gap-2">
+                                    <CopyLinkButton key={landmark.id} landmark={landmark} />
+                                    <button
+                                        onClick={onClose}
+                                        aria-label="Close"
+                                        className="p-2 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/5"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
 
                                 {/* Left Side: Visual/Quick Info */}
                                 <div className="w-full md:w-5/12 p-8 bg-zinc-900/30 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">

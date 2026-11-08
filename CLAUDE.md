@@ -10,6 +10,10 @@
 > LHF server later; the repo moves into the `Labor-Heritage-Foundation` GitHub org at
 > that time. Its startup script already has the migration-lock fix (migrate only when
 > needed), so it is ready for rolling deploys there.
+>
+> **Also at the move (since 8 Nov 2026, shareable links):** set `PUBLIC_BASE_URL` to the
+> new address; the old address must redirect **keeping the path** (`/landmark/...`) and
+> stay up while old links should work. See HANDOFF.md → "Shareable links".
 
 ## Critical Rules (Read Before Every Session)
 
@@ -92,8 +96,9 @@ landmark, and a public suggestion could publish itself (`isPublished:true` was h
   `strict-origin-when-cross-origin` — OSM tile servers refuse requests with no Referer.
 - Rate limits: 100/min on `/api`, 5/min login, 10/min suggestions and uploads, `trust proxy 1`.
 
-**Testing:** `npm test` (unit), `npm run check:security` (static). Live checks need a THROWAWAY
-server — the script creates and deletes rows:
+**Testing:** `npm test` (unit), `npm run check:security` (static), `npm run test:browser`
+(Chrome, ~30 s, throwaway test database — see `tests/browser/README.md`). Live security checks
+need a THROWAWAY server — the script creates and deletes rows:
 `BASE=http://localhost:3099 ADMIN_PASSWORD=x npm run check:security`. Never point it at production.
 
 ### 7. Framer Motion — Use Sparingly on Lists
@@ -112,12 +117,20 @@ server — the script creates and deletes rows:
 - **Coolify health check (set 25 Oct 2026):** HTTP GET `localhost:3000/api/health`, expect 200.
   Port 3001 there fails every deploy (verified 25 Oct: rolled back). `/api/health` queries the
   database, so a deploy with a broken DB is rejected and the old container keeps serving.
+- **Coolify settings:** `ADMIN_PASSWORD` (required) and `PUBLIC_BASE_URL` — the site's public
+  address, no trailing slash (`https://labor-landmarks.supersoul.top`, set 8 Nov 2026). Link
+  previews and the public feed's photo URLs use it; **change it when the site moves domain.**
+  `API_RATE_LIMIT_PER_MINUTE` exists only for the browser tests — leave it unset (default 100).
+- **Shareable links (8 Nov 2026):** `/landmark/<id>-<name>`. `server/landmark-link.ts` is shared
+  by server and browser; previews in `server/share-meta.ts`; the router lives in `main.tsx`.
 
 ## Pre-Push Checklist
 1. `npx tsc --noEmit` passes with zero errors
 2. No secrets in Dockerfile ARG/ENV
 3. `npm run build` succeeds locally
 4. `npm test` and `npm run check:security` pass
+5. `npm run test:browser` passes when pages changed. A new page behaviour gets a check
+   there; a bug fix gets a check that fails with the bug put back.
 
 ## Dependency security (updated 25 Oct 2026)
 - 25 Oct 2026: in-range `npm audit fix` + sharp 0.34 → 0.35.5 cleared 16 of 19 production advisories

@@ -10,6 +10,8 @@ import sharp from 'sharp';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { isAdminRequest, safeEqual, createUploadKey, verifyUploadKey, toPublicLandmark, PUBLIC_MAX_IMAGES } from './security.js';
+import { landmarkPath, parseLandmarkRef } from './landmark-link.js';
+import { buildLandmarkShareMeta, injectShareMeta } from './share-meta.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +21,18 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 const prisma = new PrismaClient();
+
+// The site's public address, e.g. https://labor-landmarks.supersoul.top — set in
+// Coolify. Link previews and the public feed's photo URLs need absolute URLs,
+// and request headers can't be trusted to supply them.
+const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '') || null;
+if (!PUBLIC_BASE_URL && process.env.NODE_ENV === 'production') {
+    console.warn('PUBLIC_BASE_URL is not set: shared landmark links will preview without a picture or page URL.');
+}
+/** PUBLIC_BASE_URL, or this request's own address when it is unset (local development). */
+function publicBaseUrl(req: express.Request): string {
+    return PUBLIC_BASE_URL ?? `${req.protocol}://${req.get('host')}`;
+}
 
 // Enable WAL mode for better concurrent read/write performance
 prisma.$executeRawUnsafe('PRAGMA journal_mode=WAL').catch(() => {});
@@ -51,7 +65,9 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 const limiter = (windowMs: number, max: number) => rateLimit({ windowMs, max, standardHeaders: true, legacyHeaders: false });
-app.use('/api', limiter(60 * 1000, 100));           // general API (not images)
+// API_RATE_LIMIT_PER_MINUTE is for the browser tests (tests/browser/serve.sh),
+// which load pages faster than any visitor. Leave it unset in Coolify: 100.
+app.use('/api', limiter(60 * 1000, Number(process.env.API_RATE_LIMIT_PER_MINUTE) || 100)); // general API (not images)
 const authLimiter = limiter(60 * 1000, 5);          // admin password attempts
 const submitLimiter = limiter(60 * 1000, 10);       // public suggestions
 const uploadLimiter = limiter(60 * 1000, 10);       // image uploads
@@ -138,9 +154,9 @@ app.get('/api/landmarks', async (req, res) => {
             include: { images: { orderBy: { sortOrder: 'asc' } } }
         });
         // Build base URL for image paths
-        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-        const host = req.headers['x-forwarded-host'] || req.get('host');
-        const baseUrl = `${protocol}://${host}`;
+        // Photo URLs for other sites using this feed: the configured address,
+        // not one taken from the request's X-Forwarded-Host header.
+        const baseUrl = publicBaseUrl(req);
 
         // Strip submitter contact info and add full image URLs
         const publicLandmarks = landmarks.map((l) => {
@@ -569,6 +585,52 @@ app.post('/api/admin/import', adminAuth, async (req, res) => {
         console.error('Import error:', error);
         res.status(500).json({ error: 'Failed to import data' });
     }
+});
+
+// ==================== SHAREABLE LANDMARK PAGES ====================
+// `/landmark/540-some-name` is the React app with that landmark's popup open.
+// The server's part is the link preview (server/share-meta.ts) and sending
+// links with stale or missing words to the current form of the address.
+
+// dist/index.html only changes on a rebuild, which means a new container.
+let indexHtml: string | null = null;
+function readIndexHtml(): string {
+    indexHtml ??= fs.readFileSync(path.join(__dirname, '../dist/index.html'), 'utf8');
+    return indexHtml;
+}
+
+app.get('/landmark/:ref', async (req, res) => {
+    const id = parseLandmarkRef(req.params.ref);
+    let landmark = null;
+    if (id !== null) {
+        try {
+            landmark = await prisma.landmark.findFirst({
+                where: { id, isPublished: true },
+                select: {
+                    id: true, name: true, city: true, state: true, country: true, description: true,
+                    images: { orderBy: { sortOrder: 'asc' }, take: 1, select: { filename: true } },
+                },
+            });
+        } catch (error) {
+            // A database failure costs only the preview: send the plain app,
+            // which shows its own error if the landmarks can't load either.
+            console.error('Landmark page lookup error:', error);
+            return res.type('html').send(readIndexHtml());
+        }
+    }
+    if (!landmark) {
+        // Unknown or unpublished: the app shows "not available". 404 keeps
+        // search engines from indexing the address.
+        return res.status(404).type('html').send(readIndexHtml());
+    }
+    const canonical = landmarkPath(landmark);
+    if (req.path !== canonical) {
+        // Keep any query string (e.g. a newsletter's tracking tags).
+        const queryStart = req.originalUrl.indexOf('?');
+        const query = queryStart === -1 ? '' : req.originalUrl.slice(queryStart);
+        return res.redirect(301, canonical + query);
+    }
+    res.type('html').send(injectShareMeta(readIndexHtml(), buildLandmarkShareMeta(landmark, PUBLIC_BASE_URL)));
 });
 
 // The "catch-all" handler: for any request that doesn't

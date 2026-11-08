@@ -40,3 +40,6 @@ uploads/
 # Local planning/reference docs
 client-changes-plan.md
 database-client-project.md
+
+# Browser tests: throwaway database, results and traces (tests/browser/serve.sh)
+tests/browser/.tmp/

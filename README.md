@@ -51,6 +51,8 @@ This project is fully containerized and ready for high-reliability deployment on
 - **Auto-Seeding Safety**: Built-in protection to prevent production data overwrite during deployments.
 - **Volume Safety Check**: Startup logs a warning if no existing database is found, helping detect missing volume mounts.
 - **Security**: Every change requires the admin password (`ADMIN_PASSWORD`, set in Coolify); security headers and rate limits on; `GET /api/health` checks the database.
+- **Shareable links**: every landmark has its own address (`/landmark/<id>-<name>`) with a Copy link button and link previews for Facebook, iMessage etc. Needs `PUBLIC_BASE_URL` in Coolify — the site's public address, no trailing slash; **change it if the site moves.**
+- **Tests**: `npm test`, `npm run check:security`, and `npm run test:browser` (Chrome against a throwaway test database — `tests/browser/README.md`).
 - **Deploying**: pushing to `main` does nothing on its own — press **Deploy** in Coolify.
 
 ## � Local vs Production (IMPORTANT!)
