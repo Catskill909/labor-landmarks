@@ -43,3 +43,10 @@ database-client-project.md
 
 # Browser tests: throwaway database, results and traces (tests/browser/serve.sh)
 tests/browser/.tmp/
+
+# SQLite working files of the local database, and the build cache. They were
+# tracked by mistake until 8 Nov 2026 (the copies published then held only test
+# data). Never commit them: this repo is public.
+*.db-wal
+*.db-shm
+dist-server/
