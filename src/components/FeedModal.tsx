@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Copy, Check, Rss } from 'lucide-react';
+import { Copy, Check, Rss } from 'lucide-react';
+import CloseButton from './CloseButton';
 
 interface FeedModalProps {
     isOpen: boolean;
@@ -41,13 +42,7 @@ export default function FeedModal({ isOpen, onClose }: FeedModalProps) {
                             JSON Data Feed
                         </h2>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-white"
-                        aria-label="Close modal"
-                    >
-                        <X size={20} />
-                    </button>
+                    <CloseButton onClick={onClose} />
                 </div>
 
                 {/* Content */}

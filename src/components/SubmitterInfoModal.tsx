@@ -1,4 +1,5 @@
-import { X, User, Mail, MessageSquare } from 'lucide-react';
+import { User, Mail, MessageSquare } from 'lucide-react';
+import CloseButton from './CloseButton';
 import { createPortal } from 'react-dom';
 
 interface SubmitterInfoModalProps {
@@ -19,9 +20,7 @@ export default function SubmitterInfoModal({ isOpen, onClose, submitterName, sub
             <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl">
                 <div className="flex items-center justify-between p-5 border-b border-white/5">
                     <h2 className="text-lg font-bold text-white">Submitter Info</h2>
-                    <button onClick={onClose} className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-white">
-                        <X size={18} />
-                    </button>
+                    <CloseButton onClick={onClose} />
                 </div>
                 <div className="p-5 space-y-4">
                     <p className="text-xs text-gray-500 uppercase font-bold">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
+import CloseButton from './CloseButton';
 
 interface PrivacyModalProps {
     isOpen: boolean;
@@ -25,12 +26,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
                             Privacy Policy
                         </h2>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-gray-400 hover:text-white"
-                    >
-                        <X size={20} />
-                    </button>
+                    <CloseButton onClick={onClose} />
                 </div>
 
                 {/* Content */}

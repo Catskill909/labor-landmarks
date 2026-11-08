@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import CloseButton from './CloseButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LandmarkImage } from './LandmarkCard';
 
@@ -42,12 +43,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ images, currentIndex, isO
                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md" />
 
                 {/* Close button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-[20001] p-3 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/10"
-                >
-                    <X size={20} />
-                </button>
+                <CloseButton onClick={onClose} className="absolute top-4 right-4 z-[20001]" />
 
                 {/* Navigation arrows */}
                 {images.length > 1 && (

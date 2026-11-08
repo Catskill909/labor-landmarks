@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import CloseButton from './CloseButton';
 
 interface AboutModalProps {
     isOpen: boolean;
@@ -20,12 +21,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                     <h2 className="text-xl font-bold text-white uppercase tracking-tight">
                         About Labor Landmarks
                     </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-gray-400 hover:text-white"
-                    >
-                        <X size={20} />
-                    </button>
+                    <CloseButton onClick={onClose} />
                 </div>
 
                 {/* Content */}

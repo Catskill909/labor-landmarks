@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, MapPin, Loader2 } from 'lucide-react';
+import { Save, MapPin, Loader2 } from 'lucide-react';
+import CloseButton from './CloseButton';
 import { CATEGORIES } from '../constants/categories';
 import type { Landmark, LandmarkImage } from './LandmarkCard';
 import ImageUploader from './ImageUploader';
@@ -234,9 +235,7 @@ const LandmarkModal: React.FC<LandmarkModalProps> = ({ isOpen, onClose, landmark
             <div className="relative bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl">
                 <div className="flex items-center justify-between p-6 border-b border-white/5">
                     <h2 className="text-xl font-bold">{landmark ? 'Edit Landmark' : 'Add New Landmark'}</h2>
-                    <button onClick={onClose} className="p-2 rounded-lg hover:bg-zinc-800 transition-colors">
-                        <X size={20} />
-                    </button>
+                    <CloseButton onClick={onClose} />
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[75vh]">

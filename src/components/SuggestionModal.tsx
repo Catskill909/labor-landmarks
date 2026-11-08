@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, MapPin, Loader2, Check } from 'lucide-react';
+import { Save, MapPin, Loader2, Check } from 'lucide-react';
+import CloseButton from './CloseButton';
 import { CATEGORIES } from '../constants/categories';
 import ImageUploader from './ImageUploader';
 
@@ -224,9 +225,7 @@ export default function SuggestionModal({ isOpen, onClose }: SuggestionModalProp
                     <h2 className="text-xl font-bold text-white">
                         {isSuccess ? 'Suggestion Received' : 'Suggest a Landmark'}
                     </h2>
-                    <button onClick={onClose} className="p-2 rounded-lg hover:bg-zinc-800 transition-colors text-white">
-                        <X size={20} />
-                    </button>
+                    <CloseButton onClick={onClose} />
                 </div>
 
                 {isSuccess ? (

@@ -150,4 +150,26 @@ test.describe('on a phone', () => {
         await expect(dialog(page).getByRole('button', { name: 'Close' })).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     });
+
+    test('Close and Copy link stay on screen when the popup is scrolled to the bottom', async ({ page }) => {
+        const { triangle } = fixtures();
+        await page.goto(`/landmark/${triangle}`);
+        const box = dialog(page, 'Triangle Shirtwaist Factory');
+        await expect(box).toBeVisible();
+
+        // Scroll whatever scrolls inside the popup all the way down.
+        const scrolled = await box.evaluate((el) => {
+            const scrollers = [el, ...el.querySelectorAll('*')].filter(
+                (n) => n instanceof HTMLElement && n.scrollHeight > n.clientHeight + 4 && getComputedStyle(n).overflowY !== 'visible',
+            ) as HTMLElement[];
+            for (const s of scrollers) s.scrollTop = s.scrollHeight;
+            return scrollers.length;
+        });
+        expect(scrolled).toBeGreaterThan(0); // the popup really is taller than the phone screen
+
+        await expect(box.getByRole('button', { name: 'Close' })).toBeInViewport();
+        await expect(box.getByRole('button', { name: 'Copy link to this landmark' })).toBeInViewport();
+        await box.getByRole('button', { name: 'Close' }).click();
+        await expect(dialog(page)).toBeHidden();
+    });
 });

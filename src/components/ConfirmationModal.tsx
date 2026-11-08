@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import CloseButton from './CloseButton';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -79,13 +80,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                 {message}
                             </div>
                         </div>
-                        <button
-                            onClick={onClose}
-                            disabled={isLoading}
-                            className="text-gray-500 hover:text-white transition-colors disabled:opacity-50"
-                        >
-                            <X size={20} />
-                        </button>
+                        <CloseButton onClick={onClose} disabled={isLoading} />
                     </div>
 
                     <div className="mt-8 flex justify-end gap-3">

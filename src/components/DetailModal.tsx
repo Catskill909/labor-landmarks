@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, MapPin, Info, Navigation, ExternalLink, Phone, Mail, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Info, Navigation, ExternalLink, Phone, Mail, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,6 +7,7 @@ import L from 'leaflet';
 import type { Landmark } from './LandmarkCard';
 import ImageLightbox from './ImageLightbox';
 import CopyLinkButton from './CopyLinkButton';
+import CloseButton from './CloseButton';
 import { fullPlaceName } from '../../server/place-name.ts';
 
 // Fix for default marker icon in React-Leaflet
@@ -121,22 +122,21 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                     duration: 1.0,
                                     ease: [0.4, 0, 0.2, 1] // Native-like smooth ease-in-out
                                 }}
-                                className="relative w-full max-h-[90vh] overflow-y-auto no-scrollbar glass rounded-3xl border border-white/10 shadow-2xl flex flex-col md:flex-row mx-auto"
+                                className="relative w-full max-h-[90vh] overflow-hidden glass rounded-3xl border border-white/10 shadow-2xl flex mx-auto"
                                 role="dialog"
                                 aria-modal="true"
                                 aria-label={landmark.name}
                             >
-                                {/* Copy link + Close */}
+                                {/* Copy link + Close sit on the card's frame, outside the
+                                    scrolling area below, so they stay in the corner while the
+                                    content scrolls. (They used to scroll away — 8 Nov 2026.) */}
                                 <div className="absolute top-4 right-4 z-[10000] flex items-center gap-2">
                                     <CopyLinkButton key={landmark.id} landmark={landmark} />
-                                    <button
-                                        onClick={onClose}
-                                        aria-label="Close"
-                                        className="p-2 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/5"
-                                    >
-                                        <X size={20} />
-                                    </button>
+                                    <CloseButton onClick={onClose} />
                                 </div>
+
+                                {/* Scrolling content */}
+                                <div data-scroll-area className="w-full max-h-[90vh] overflow-y-auto no-scrollbar flex flex-col md:flex-row">
 
                                 {/* Left Side: Visual/Quick Info */}
                                 <div className="w-full md:w-5/12 p-8 bg-zinc-900/30 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
@@ -297,6 +297,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                     )}
 
 
+                                </div>
                                 </div>
                             </motion.div>
                         </AnimatePresence>

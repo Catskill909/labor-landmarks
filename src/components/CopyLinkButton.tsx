@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link2, Check } from 'lucide-react';
 import type { Landmark } from './LandmarkCard';
 import { landmarkUrl } from '../landmark-url';
+import { CIRCLE_BUTTON } from './circle-button';
 
 /**
  * "Copy link" for the landmark popup. If the browser refuses clipboard access
@@ -55,7 +56,8 @@ export default function CopyLinkButton({ landmark }: { landmark: Landmark }) {
       title="Copy a link to this landmark"
       // On phones only the icon shows, so the name has to come from here.
       aria-label={state === 'copied' ? 'Link copied' : 'Copy link to this landmark'}
-      className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-zinc-900/50 text-white hover:bg-zinc-800 transition-colors border border-white/5 text-xs font-medium"
+      // A circle on phones (icon only), a pill with the words on wider screens.
+      className={`${CIRCLE_BUTTON} gap-1.5 h-10 min-w-10 px-2.5 sm:px-3.5 text-xs font-medium`}
     >
       {state === 'copied' ? <Check size={16} className="text-green-400" /> : <Link2 size={16} />}
       <span className={state === 'copied' ? '' : 'hidden sm:inline'}>{state === 'copied' ? 'Copied!' : 'Copy link'}</span>

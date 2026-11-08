@@ -435,6 +435,14 @@ are for readers. Links with stale or missing words 301 to the current form.
   the "show all" fit timer is cancelled when the list changes; close button, popup, pins and
   READ MORE buttons have names for screen readers.
 - **Admin:** the login no longer waits for every public landmark to load first.
+- **Close buttons (8 Nov):** one round `CloseButton` for every popup (dark circle, soft
+  shadow). The landmark popup's frame no longer scrolls — only its content does — so Close
+  and Copy link stay in the corner (they used to scroll away). Browser check scrolls the popup
+  to the bottom on a phone; it fails with the old popup.
+- **Locations (8 Nov):** `server/place-name.ts` tidies city/state/country everywhere they
+  show (preview, popup, list card, map pin): "NA"/"-" placeholders dropped, all-capitals
+  names shown normally, every spelling of the US treated alike. Data unchanged — a cleanup of
+  the state field in admin (5 blank/NA, 1 "-", full names vs codes) would still be worthwhile.
 - Code: `server/landmark-link.ts` (shared with the browser), `server/share-meta.ts`,
   `/landmark/:ref` route in `server/index.ts`; the router moved from `App.tsx` to `main.tsx`.
 - **Tests:** `npm test` 24 (links; hostile text in every preview field — fails with escaping
