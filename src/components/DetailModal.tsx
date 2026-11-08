@@ -7,6 +7,7 @@ import L from 'leaflet';
 import type { Landmark } from './LandmarkCard';
 import ImageLightbox from './ImageLightbox';
 import CopyLinkButton from './CopyLinkButton';
+import { fullPlaceName } from '../../server/place-name.ts';
 
 // Fix for default marker icon in React-Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -198,7 +199,7 @@ const DetailModal: React.FC<DetailModalProps> = ({ landmark, isOpen, onClose, on
                                             <div>
                                                 <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Location</p>
                                                 <p className="text-sm font-medium">
-                                                    {[landmark.city, landmark.state, landmark.country].filter(Boolean).join(', ')}
+                                                    {fullPlaceName(landmark)}
                                                 </p>
                                             </div>
                                         </div>

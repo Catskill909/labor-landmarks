@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import type { Landmark } from './LandmarkCard';
 import L from 'leaflet';
 import { Globe, Minus, Plus } from 'lucide-react';
+import { placeName } from '../../server/place-name.ts';
 
 // Fix for default marker icon in React-Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -105,7 +106,7 @@ const MapMarkers: React.FC<MapMarkersProps> = ({ landmarks, onSelectLandmark }) 
                             )}
                             <div className="px-1">
                                 <h3 className="font-bold text-sm leading-tight group-hover:text-red-500 transition-colors uppercase tracking-tight pr-8">{landmark.name}</h3>
-                                <p className="text-xs text-gray-400 leading-tight">{landmark.city}, {landmark.state}</p>
+                                <p className="text-xs text-gray-400 leading-tight">{placeName(landmark)}</p>
                                 <span className="text-[10px] text-red-500 font-bold group-hover:underline">
                                     VIEW DETAILS
                                 </span>

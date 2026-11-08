@@ -11,6 +11,7 @@ export interface FixtureIds {
     haymarket: number;
     hostile: number;
     unpublished: number;
+    lisbon: number;
 }
 
 /** Ids written by fixtures.ts when the test server started. Call inside a test. */

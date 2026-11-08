@@ -88,6 +88,11 @@ test('title is "Name — City, State", or the country outside the US', () => {
         'The Abraham Lincoln Brigade Monument — Dublin, Ireland');
     assert.equal(buildLandmarkShareMeta(landmark({ city: '', state: '', country: null }), BASE).title,
         'The Abraham Lincoln Brigade Monument');
+    // Live 8 Nov: state "NA" read "Lisbon, NA" in Facebook's preview.
+    assert.equal(buildLandmarkShareMeta(landmark({ name: 'Tejo Power Station', city: 'Lisbon', state: 'NA', country: 'Portugal' }), BASE).title,
+        'Tejo Power Station — Lisbon, Portugal');
+    assert.equal(buildLandmarkShareMeta(landmark({ city: 'Albany', state: 'NY', country: 'United States' }), BASE).title,
+        'The Abraham Lincoln Brigade Monument — Albany, NY');
 });
 
 test('every landmark has og:image: its first photo (large card) or the logo (small card)', () => {

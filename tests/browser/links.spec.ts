@@ -106,6 +106,19 @@ test('server: previews carry "Name — City, State", the page address, and the p
     expect(logo.headers()['content-type']).toBe('image/png');
 });
 
+test('a placeholder state ("NA") never shows: preview, popup and list read "Lisbon, Portugal"', async ({ page, request }) => {
+    const { lisbon } = fixtures();
+    const html = await (await request.get(`/landmark/${lisbon}`)).text();
+    expect(html).toContain('<meta property="og:title" content="Tejo Power Station — Lisbon, Portugal" />');
+
+    await page.goto(`/landmark/${lisbon}`);
+    await expect(dialog(page, 'Tejo Power Station')).toContainText('Lisbon, Portugal');
+    await expect(dialog(page)).not.toContainText('NA,');
+    await page.keyboard.press('Escape');
+    await showList(page);
+    await expect(page.getByText('Lisbon, Portugal', { exact: true })).toBeVisible();
+});
+
 test('a name containing HTML/script stays text — in the preview and on the page', async ({ page, request }) => {
     const { hostile } = fixtures();
     const html = await (await request.get(`/landmark/${hostile}`)).text();

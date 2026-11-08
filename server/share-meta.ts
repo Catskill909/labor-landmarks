@@ -11,6 +11,7 @@
  * Database's server/share-meta.ts, 8 Nov 2026.)
  */
 import { landmarkPath } from './landmark-link.js';
+import { placeName } from './place-name.js';
 
 export const SITE_NAME = 'LHF Labor Landmarks';
 
@@ -63,11 +64,10 @@ export function clip(text: string, max: number): string {
     return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,.;:–—-]+$/, '')}…`;
 }
 
-/** "Name — City, State" (country instead of state outside the US). */
+/** "Name — Chicago, IL" / "Name — Lisbon, Portugal" (see place-name.ts). */
 function landmarkTitle(landmark: ShareableLandmark): string {
     const name = clip(landmark.name?.trim() || 'Labor landmark', TITLE_LENGTH);
-    const region = landmark.state?.trim() || landmark.country?.trim() || '';
-    const place = [landmark.city?.trim(), region].filter(Boolean).join(', ');
+    const place = placeName(landmark);
     return place ? `${name} — ${place}` : name;
 }
 

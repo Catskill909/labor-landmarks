@@ -51,9 +51,11 @@ async function main() {
     const hostile = await create(HOSTILE_NAME, 'Kansas City', 'MO', 39.0997, -94.5786, {
         description: '"><img src=x onerror="window.__pwned=2"> test fixture',
     });
+    // Real-world messy location: state "NA" read "Lisbon, NA" in a live preview.
+    const lisbon = await create('Tejo Power Station', 'Lisbon', 'NA', 38.6957, -9.1946, { country: 'Portugal' });
     const unpublished = await create('Unpublished Test Landmark', 'Boston', 'MA', 42.3601, -71.0589, { isPublished: false });
 
-    const ids = { seattle: seattle.id, triangle: triangle.id, haymarket: haymarket.id, hostile: hostile.id, unpublished: unpublished.id };
+    const ids = { seattle: seattle.id, triangle: triangle.id, haymarket: haymarket.id, hostile: hostile.id, unpublished: unpublished.id, lisbon: lisbon.id };
     fs.writeFileSync(path.join(here, '.tmp', 'fixtures.json'), JSON.stringify(ids, null, 2));
     console.log('Test fixtures written:', ids);
 }

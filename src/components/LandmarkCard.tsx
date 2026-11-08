@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Info, ArrowRight } from 'lucide-react';
+import { placeName } from '../../server/place-name.ts';
 
 export interface LandmarkImage {
     id: number;
@@ -46,7 +47,7 @@ const LandmarkCard: React.FC<LandmarkCardProps> = ({ landmark, onClick }) => {
                     <MapPin className="text-gray-400 group-hover:text-red-500 transition-colors" size={20} />
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-md border border-white/5">
-                    {landmark.city}, {landmark.state}{landmark.country && landmark.country !== 'USA' ? `, ${landmark.country}` : ''}
+                    {placeName(landmark)}
                 </span>
             </div>
 
