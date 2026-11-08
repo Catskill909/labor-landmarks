@@ -441,8 +441,23 @@ are for readers. Links with stale or missing words 301 to the current form.
   to the bottom on a phone; it fails with the old popup.
 - **Locations (8 Nov):** `server/place-name.ts` tidies city/state/country everywhere they
   show (preview, popup, list card, map pin): "NA"/"-" placeholders dropped, all-capitals
-  names shown normally, every spelling of the US treated alike. Data unchanged — a cleanup of
-  the state field in admin (5 blank/NA, 1 "-", full names vs codes) would still be worthwhile.
+  names shown normally, every spelling of the US treated alike. **Data unchanged on purpose.**
+  Making every state the same format (~250 full names vs codes) was **decided against** (8 Nov):
+  it is cosmetic now, and a scripted edit of live data risks overwriting LHF's edits.
+
+### 🧹 Location fixes for LHF to make by hand in admin (found 8 Nov 2026)
+Seven live landmarks have junk or wrong location data. Edit each in **production admin** (never
+by script or import). Being sent to Chris and Harold in the next email roundup.
+
+| # | Landmark | Problem | Suggested fix |
+|---|---|---|---|
+| 54 | Battle of Blair Mountain Historic Site | State "West" (cut short) | State → WV |
+| 198 | Oklahoma Labor Heritage Foundation | No city or state | City → Oklahoma City, State → OK (pin is there) |
+| 242 | Tejo Power Station (Museum of Electricity) | State "NA" | Clear the state |
+| 244 | International Association of Labour History Institutions (IALHI) | Says Amsterdam, Netherlands; **pin is in Vienna, Austria** | LHF to confirm which is right |
+| 257 | United Association for Labor Education (UALE) | No city/state, empty description, pin on a default Washington DC spot | LHF: fill in, or unpublish |
+| 263 | "Washington DC Labor History items (see CG's list)" | Looks like an internal to-do note, published; empty description | Probably unpublish (not delete) |
+| 273 | Working-Class Studies Association | City and state "-" | City → Stony Brook, State → NY (from its address) |
 - Code: `server/landmark-link.ts` (shared with the browser), `server/share-meta.ts`,
   `/landmark/:ref` route in `server/index.ts`; the router moved from `App.tsx` to `main.tsx`.
 - **Tests:** `npm test` 24 (links; hostile text in every preview field — fails with escaping
