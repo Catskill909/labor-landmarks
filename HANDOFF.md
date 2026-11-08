@@ -418,7 +418,7 @@ When picking up from this document, future AI agents should:
 
 ---
 
-## 🔗 SHAREABLE LINKS — built 8 Nov 2026 · ⚠️ three steps at the server move
+## 🔗 SHAREABLE LINKS — live 8 Nov 2026 (`69083c6`, verified) · ⚠️ three steps at the server move
 
 Every landmark has its own address: `/landmark/<id>-<name>`, e.g.
 `/landmark/540-the-abraham-lincoln-brigade-monument`. The number finds the landmark; the words
@@ -476,17 +476,25 @@ Full steps (private): `lhf-server` → `docs/09-apps.md`, "Shareable links".
 
 ---
 
-## CURRENT STATE (25 Oct 2026) — READ THIS FIRST IN NEXT SESSION
+## CURRENT STATE (8 Nov 2026) — READ THIS FIRST IN NEXT SESSION
 
-### Deployed and verified live (25 Oct 2026)
+### Deployed and verified live (8 Nov 2026)
+`69083c6` — shareable links, previews, place names, round close buttons (see the section above).
+Live checks: preview of #242 reads "Lisbon, Portugal" with its photo; no-photo landmarks use the
+logo; unknown links 404; the feed's 1,029 photo URLs use `PUBLIC_BASE_URL` even with a forged
+`X-Forwarded-Host`; on a phone Close stays on screen after scrolling; Escape closes on the map.
+`main` = production; working tree clean.
+
+### Production (8 Nov 2026)
+- **454 published landmarks**, 1,029 photos. #513 "test" is no longer public.
+- **7 landmarks need location fixes by hand** — table in "Location fixes for LHF" above.
+
+### Earlier: deployed and verified live (25 Oct 2026)
 `6dba6e9` map controls · `2780bde` deploy fix · `7c779a0` security · `4699c56` package updates.
 Working tree clean; `main` = production. Live audit after deploy: every write route refuses missing or
 wrong passwords, no submitter data or unpublished rows public, map/tiles/markers/address lookup load
 with no blocked requests, photo upload + thumbnail work, rate limiter counts per visitor.
 
-### Production (25 Oct 2026)
-- **426 landmarks + 1 unpublished suggestion (#505)**, ~929 photos, at `labor-landmarks.supersoul.top`
-- A record named **"test" (#513)** was created to check photo upload — delete it if it's still there
 
 ### Open items (in order)
 1. **Export/restore with photos** (tracker row 3) — today's backup can't fully restore the site (no
